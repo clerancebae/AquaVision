@@ -38,7 +38,6 @@ public class MissionPanel extends JPanel {
 
 
     private void loadImages() {
-        // Konsola bilgi yazdıralım (Hata ayıklamak için)
         System.out.println("--- RESİM YÜKLEME BAŞLADI ---");
 
         // 1. Arkaplan
@@ -52,7 +51,7 @@ public class MissionPanel extends JPanel {
             System.out.println("BAŞARILI: level_active.png yüklendi.");
         } else {
             System.err.println("HATA: level_active.png BULUNAMADI! (Butonlar renkli daire olacak)");
-            shellIcon = null; // Resim yoksa null kalsın, aşağıda renk ile çizeceğiz
+            shellIcon = null;
         }
 
         // 3. Kilitli İkon (level_locked.png)
@@ -62,7 +61,6 @@ public class MissionPanel extends JPanel {
             lockedIcon = new ImageIcon(scaled);
             System.out.println("BAŞARILI: level_locked.png yüklendi.");
         } else {
-            // Kilit resmi yoksa ve aktif resim varsa, aktif resmi grileştirip kullanalım
             if (shellIcon != null) {
                 System.out.println("BİLGİ: level_locked.png yok, aktif resim grileştiriliyor.");
                 lockedIcon = createGrayIcon(shellIcon);
@@ -72,22 +70,18 @@ public class MissionPanel extends JPanel {
         }
     }
 
-    // Hem src klasörüne hem proje ana dizinine bakan güvenli yükleyici
     private Image safeLoadImage(String fileName) {
         try {
-            // 1. Önce classpath (src/resources) içine bak
             URL url = getClass().getResource("/" + fileName);
             if (url != null) {
                 return new ImageIcon(url).getImage();
             }
-            // 2. Bulamazsa direkt dosya yoluna bak
             return new ImageIcon(fileName).getImage();
         } catch (Exception e) {
             return null;
         }
     }
 
-    // Otomatik grileştirme metodu
     private ImageIcon createGrayIcon(ImageIcon icon) {
         Image img = icon.getImage();
         ImageFilter filter = new GrayFilter(true, 50);
@@ -99,7 +93,7 @@ public class MissionPanel extends JPanel {
     private void initButtons() {
 
         int maxUnlockedLevel = 1;
-        JButton returnButton = new  JButton();
+        JButton returnButton = new JButton();
         returnButton.setBounds(10, 10, 50, 50);
 
         Image img = safeLoadImage("return.png");
@@ -127,10 +121,9 @@ public class MissionPanel extends JPanel {
         this.add(returnButton);
 
         for (int i = 0; i < levelPositions.length; i++) {
-            JButton btn = new  JButton();
-            int levelNum = i + 1;
+            JButton btn = new JButton();
+            final int levelNum = i + 1; // Make it final so it can be used in lambda
             btn.setBounds(levelPositions[i][0], levelPositions[i][1], BUTTON_SIZE, BUTTON_SIZE);
-
 
             btn.setHorizontalTextPosition(JButton.CENTER);
             btn.setVerticalTextPosition(JButton.CENTER);
@@ -141,14 +134,11 @@ public class MissionPanel extends JPanel {
             btn.setBorderPainted(false);
             btn.setFocusPainted(false);
 
-
             if (levelNum <= maxUnlockedLevel) {
-
 
                 if (shellIcon != null) {
                     btn.setIcon(shellIcon);
                 } else {
-
                     btn.setBackground(Color.GREEN);
                     btn.setOpaque(true);
                 }
@@ -156,32 +146,53 @@ public class MissionPanel extends JPanel {
                 btn.setText(String.valueOf(levelNum));
                 btn.setEnabled(true);
 
-                btn.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        System.out.println("Level " + levelNum + " oynanıyor!");
-                    }
+                // Fixed: Use lambda expression with final variable
+                btn.addActionListener(e -> {
+                    System.out.println("Level " + levelNum + " butonuna tıklandı!");
+                    openGameFrame(levelNum);
                 });
 
             } else {
 
                 if (lockedIcon != null) {
                     btn.setIcon(lockedIcon);
-                    btn.setDisabledIcon(lockedIcon); // Disable olunca bu resmi göster
+                    btn.setDisabledIcon(lockedIcon);
                 } else {
-                    // Resim yoksa GRİ DAİRE yap
                     btn.setBackground(Color.GRAY);
                     btn.setOpaque(true);
                 }
 
-                btn.setText(""); // Yazı yok
-                btn.setEnabled(false); // Tıklanamaz
+                btn.setText("");
+                btn.setEnabled(false);
             }
 
             this.add(btn);
             levelButtons.add(btn);
         }
-    } // we can use iterator in this code.
+    }
+
+    private void openGameFrame(int levelNum) {
+        System.out.println("openGameFrame çağrıldı, level: " + levelNum);
+
+        // Create a new frame for the game
+        JFrame gameFrame = new JFrame("Level " + levelNum);
+        gameFrame.setSize(600, 600);
+        gameFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        gameFrame.setLocationRelativeTo(null);
+        gameFrame.setUndecorated(true); // Remove window decorations like the main frame
+
+        // Create and add the Game panel
+        Game gamePanel = new Game(levelNum);
+        gameFrame.add(gamePanel);
+
+        // Show the game frame
+        gameFrame.setVisible(true);
+
+        // Request focus for the game panel
+        gamePanel.requestFocusInWindow();
+
+        System.out.println("Game frame oluşturuldu ve gösterildi!");
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -189,7 +200,6 @@ public class MissionPanel extends JPanel {
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, this.getWidth(), this.getHeight(), this);
         } else {
-            // Arkaplan resmi yoksa MAVİ ekran
             g.setColor(new Color(100, 200, 255));
             g.fillRect(0, 0, getWidth(), getHeight());
         }

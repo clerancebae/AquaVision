@@ -55,16 +55,33 @@ public class SettingPanel extends JPanel {
         // ---- SLIDER KISMI ----
         JSlider slider = getJSlider();
         add(slider);
+        JLabel title = new JLabel("Game Settings");
+        title.setBounds(50, 0, 200, 60);
+        title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 25));
+        title.setForeground(new Color(0, 60, 120));
+        add(title);
+
+        JLabel music = new JLabel("Music");
+        music.setBounds(35, 60, 200, 60);
+        music.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,15));
+        music.setForeground(new Color(0, 60, 120));
+        add(music);
+        slider.addChangeListener(e -> {
+            int volume = slider.getValue();
+            System.out.println(volume);
+            //SoundManager.setVolume(volume / 100f);
+        });
     }
 
     private static JSlider getJSlider() {
         JSlider slider = new JSlider();
         // Slider boyutunu biraz artırdım ki altın çerçeve sığsın
-        slider.setBounds(10, 80, 275, 60);
+        slider.setBounds(10, 100, 275, 60);
 
         // Tasarım gereği standart çizgileri kapatıyoruz (Daha şık durması için)
+        slider.setMajorTickSpacing(10);
         slider.setPaintTicks(false);
-        slider.setPaintLabels(false);
+        slider.setPaintLabels(true);
         slider.setMinimum(0);
         slider.setMaximum(100);
         slider.setValue(50); // Başlangıç değeri
@@ -79,6 +96,7 @@ public class SettingPanel extends JPanel {
 
         // 3. Arka planı şeffaf yap
         slider.setOpaque(false);
+
         slider.setBackground(new Color(189, 237, 255));
 
         return slider;

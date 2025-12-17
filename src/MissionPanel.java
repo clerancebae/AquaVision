@@ -179,13 +179,12 @@ public class MissionPanel extends JPanel {
         gameFrame.setSize(600, 600);
         gameFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         gameFrame.setLocationRelativeTo(null);
-        gameFrame.setUndecorated(true); // Remove window decorations like the main frame
+        gameFrame.setUndecorated(true);
 
         // Create and add the Game panel
         Game gamePanel = new Game(levelNum);
         gameFrame.add(gamePanel);
 
-        // Show the game frame
         gameFrame.setVisible(true);
 
         // Request focus for the game panel

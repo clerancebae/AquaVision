@@ -31,8 +31,6 @@ public class SettingPanel extends JPanel {
         });
         add(closeBtn);
 
-        // ---- Voice Button (Senin istediğin gibi duruyor) ----
-        // Buraya "voice.png" veya "sound.png" gibi bir ikon ekleyeceksin sanırım
         ImageIcon iconClose = new ImageIcon(".png");
         Image scaledClose = (iconClose.getImage() != null) ?
                 iconClose.getImage().getScaledInstance(90, 60, Image.SCALE_SMOOTH) : null;
@@ -48,7 +46,7 @@ public class SettingPanel extends JPanel {
         closeVoice.setOpaque(false); // Düzeltme: closeBtn yerine closeVoice yapıldı
 
         closeVoice.addActionListener(e -> {
-            // Buraya ses açma kapama kodlarını ekleyeceksin
+
         });
         add(closeVoice);
 
@@ -67,18 +65,21 @@ public class SettingPanel extends JPanel {
         music.setForeground(new Color(0, 60, 120));
         add(music);
         slider.addChangeListener(e -> {
-            int volume = slider.getValue();
-            System.out.println(volume);
-            //SoundManager.setVolume(volume / 100f);
+            int value = slider.getValue(); // 0 - 100
+
+            float min = -80f;
+            float max = 6f;
+
+            float dB = min + (value / 100f) * (max - min);
+            SoundManager.setVolume(dB);
         });
+
     }
 
     private static JSlider getJSlider() {
         JSlider slider = new JSlider();
-        // Slider boyutunu biraz artırdım ki altın çerçeve sığsın
         slider.setBounds(10, 100, 275, 60);
 
-        // Tasarım gereği standart çizgileri kapatıyoruz (Daha şık durması için)
         slider.setMajorTickSpacing(10);
         slider.setPaintTicks(false);
         slider.setPaintLabels(true);
@@ -86,12 +87,9 @@ public class SettingPanel extends JPanel {
         slider.setMaximum(100);
         slider.setValue(50); // Başlangıç değeri
 
-        // 1. Slider topu için İSTİRİDYE resmini yükle
-        // Projende "shell_icon.png" adında bir resim olduğundan emin ol
         ImageIcon sliderIcon = new ImageIcon("level_active.png");
         Image sliderImg = (sliderIcon.getImage() != null) ? sliderIcon.getImage() : null;
 
-        // 2. Yeni Deniz Temalı Tasarımı Uygula
         slider.setUI(new SeaSliderUI(slider, sliderImg));
 
         // 3. Arka planı şeffaf yap
@@ -145,10 +143,17 @@ class SeaSliderUI extends BasicSliderUI {
         g2d.fillRoundRect(trackRect.x + 4, trackY + 2, w - 8, h - 4, TRACK_ARC, TRACK_ARC);
 
         // --- C) DOLU KISIM (SOL TARAF - CAM GÖBEĞİ) ---
-        int fillWidth = thumbRect.x - trackRect.x + (thumbRect.width / 2);
+        int min = slider.getMinimum();
+        int max = slider.getMaximum();
+        int value = slider.getValue();
 
-        // Sınır koruması
-        if (fillWidth < TRACK_ARC) fillWidth = TRACK_ARC;
+        int innerX = trackRect.x + 4;
+        int innerW = w - 8;
+
+        float percent = (float)(value - min) / (float)(max - min);
+
+        int fillWidth = (int)(innerW * percent);
+
         if (fillWidth > w) fillWidth = w;
 
         // Parlak turkuaz gradient
@@ -163,7 +168,8 @@ class SeaSliderUI extends BasicSliderUI {
         g2d.setClip(innerTrack);
 
         g2d.setPaint(cyanGradient);
-        g2d.fillRect(trackRect.x, trackY, fillWidth, h);
+        g2d.fillRect(innerX, trackY, fillWidth, h);
+
 
         g2d.setClip(oldClip);
     }

@@ -456,23 +456,6 @@ class Player {
         }
     }
 
-    public void draw(Graphics g) {
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        if (fishImage != null) {
-            // Draw fish image (flip horizontally if facing left)
-            if (facingRight) {
-                g2d.drawImage(fishImage, (int)x, (int)y, width, height, null);
-            } else {
-                // Flip the image horizontally
-                g2d.drawImage(fishImage, (int)x + width, (int)y, -width, height, null);
-            }
-        } else {
-            // Draw a simple fish shape as fallback
-            drawSimpleFish(g2d);
-        }
-    }
     private void drawSimpleFish(Graphics2D g2d) {
         // Body (oval)
         g2d.setColor(new Color(255, 140, 0)); // Orange
@@ -506,5 +489,23 @@ class Player {
     public int getWidth() { return width; }
     public int getHeight() { return height; }
 
+    public void draw(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        if (fishImage != null) {
+            // Draw fish image (flip horizontally if facing left)
+            if (facingRight) {
+                g2d.drawImage(fishImage, (int)x, (int)y, width, height, null);
+            } else {
+                // Flip the image horizontally
+                g2d.drawImage(fishImage, (int)x + width, (int)y, -width, height, null);
+            }
+        } else {
+            // Draw a simple fish shape as fallback
+            drawSimpleFish(g2d);
+        }
+    }
 }
+
 

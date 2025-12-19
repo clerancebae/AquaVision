@@ -194,12 +194,12 @@ public class Game extends BasePanel {
         );
 
         JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
-        panel.setBackground(new Color(50, 150, 50));
+        panel.setBackground(new Color(189, 237, 255));
         panel.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
 
         JLabel title = new JLabel("🎉 Mission " + levelNumber + " Complete! 🎉", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 24));
-        title.setForeground(Color.WHITE);
+        title.setForeground(Color.BLACK);
 
         // Calculate total time
         long totalTime = 0;
@@ -209,7 +209,7 @@ public class Game extends BasePanel {
 
         JLabel timeLabel = new JLabel("Total Time: " + (totalTime / 1000.0) + "s", SwingConstants.CENTER);
         timeLabel.setFont(new Font("Arial", Font.PLAIN, 18));
-        timeLabel.setForeground(Color.WHITE);
+        timeLabel.setForeground(Color.BLACK);
 
         JButton continueButton = new JButton("Continue");
         continueButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -251,16 +251,16 @@ public class Game extends BasePanel {
         );
 
         JPanel panel = new JPanel(new GridLayout(5, 1, 10, 10));
-        panel.setBackground(new Color(180, 50, 50));
+        panel.setBackground(new Color(189, 237, 255));
         panel.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
 
-        JLabel title = new JLabel("💥 Collision! Try Again 💥", SwingConstants.CENTER);
+        JLabel title = new JLabel("Collision! Try Again ", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 24));
-        title.setForeground(Color.WHITE);
+        title.setForeground(Color.black);
 
         JLabel phaseInfo = new JLabel("Failed at Phase " + (currentPhase + 1) + "/" + TOTAL_PHASES, SwingConstants.CENTER);
         phaseInfo.setFont(new Font("Arial", Font.PLAIN, 16));
-        phaseInfo.setForeground(Color.WHITE);
+        phaseInfo.setForeground(Color.BLACK);
 
         JButton retryButton = new JButton("Retry Mission");
         JButton exitButton = new JButton("Exit to Missions");
@@ -331,7 +331,8 @@ public class Game extends BasePanel {
 
         JLabel title = new JLabel("PAUSED", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 24));
-        title.setForeground(Color.WHITE);
+        title.setForeground(Color.BLACK);
+
 
         JButton resume = new JButton("Resume");
         JButton restart = new JButton("Restart");
@@ -785,7 +786,7 @@ class Player {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         if (fishImage != null) {
-            if (facingRight) {
+            if (!facingRight) {
                 g2d.drawImage(fishImage, (int)x, (int)y, width, height, null);
             } else {
                 g2d.drawImage(fishImage, (int)x + width, (int)y, -width, height, null);

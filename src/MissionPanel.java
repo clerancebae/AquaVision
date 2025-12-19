@@ -1,15 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.ImageFilter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MissionPanel extends JPanel {
+public class MissionPanel extends BasePanel {
     private JPanel strtPanel;
-    // --- AYARLAR ---
+
     private static final int BUTTON_SIZE = 60;
     private static final int FONT_SIZE = 20;
 
@@ -18,14 +16,16 @@ public class MissionPanel extends JPanel {
             {370, 340}, // Level 2
             {170, 220}, // Level 3
             {350, 100}, // Level 4
-            {260, 20}, // Level 5
+            {260, 20},  // Level 5
     };
 
     private List<JButton> levelButtons = new ArrayList<>();
     private Image backgroundImage;
-    private ImageIcon shellIcon;  // Açık (Renkli)
+    private ImageIcon shellIcon;
     private ImageIcon lockedIcon;
-    private ImageIcon returnBtn; // Kapalı (Gri/Kilitli)
+
+    // Track unlocked levels (can be loaded from save file later)
+    private int maxUnlockedLevel = 1;
 
     public MissionPanel(JPanel strtPanel) {
         this.setPreferredSize(new Dimension(600, 600));
@@ -36,33 +36,32 @@ public class MissionPanel extends JPanel {
         initButtons();
     }
 
-
     private void loadImages() {
-        System.out.println("--- RESİM YÜKLEME BAŞLADI ---");
+        System.out.println("--- Loading Images ---");
 
-        // 1. Arkaplan
+        // Background
         backgroundImage = safeLoadImage("MissionBackground.png");
 
-        // 2. Aktif İkon (level_active.png)
+        // Active icon
         Image imgActive = safeLoadImage("level_active.png");
         if (imgActive != null) {
             Image scaled = imgActive.getScaledInstance(BUTTON_SIZE, BUTTON_SIZE, Image.SCALE_SMOOTH);
             shellIcon = new ImageIcon(scaled);
-            System.out.println("BAŞARILI: level_active.png yüklendi.");
+            System.out.println("SUCCESS: level_active.png loaded.");
         } else {
-            System.err.println("HATA: level_active.png BULUNAMADI! (Butonlar renkli daire olacak)");
+            System.err.println("ERROR: level_active.png not found!");
             shellIcon = null;
         }
 
-        // 3. Kilitli İkon (level_locked.png)
+        // Locked icon
         Image imgLocked = safeLoadImage("level_locked.png");
         if (imgLocked != null) {
             Image scaled = imgLocked.getScaledInstance(BUTTON_SIZE, BUTTON_SIZE, Image.SCALE_SMOOTH);
             lockedIcon = new ImageIcon(scaled);
-            System.out.println("BAŞARILI: level_locked.png yüklendi.");
+            System.out.println("SUCCESS: level_locked.png loaded.");
         } else {
             if (shellIcon != null) {
-                System.out.println("BİLGİ: level_locked.png yok, aktif resim grileştiriliyor.");
+                System.out.println("INFO: level_locked.png not found, using grayscale.");
                 lockedIcon = createGrayIcon(shellIcon);
             } else {
                 lockedIcon = null;
@@ -91,8 +90,7 @@ public class MissionPanel extends JPanel {
     }
 
     private void initButtons() {
-
-        int maxUnlockedLevel = 1;
+        // Return button
         JButton returnButton = new JButton();
         returnButton.setBounds(10, 10, 50, 50);
 
@@ -109,20 +107,18 @@ public class MissionPanel extends JPanel {
         returnButton.addActionListener(e -> {
             JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
             frame.getContentPane().removeAll();
-
             frame.getContentPane().add(strtPanel);
-
             frame.revalidate();
             frame.repaint();
-
             strtPanel.requestFocusInWindow();
         });
 
         this.add(returnButton);
 
+        // Level buttons
         for (int i = 0; i < levelPositions.length; i++) {
             JButton btn = new JButton();
-            final int levelNum = i + 1; // Make it final so it can be used in lambda
+            final int levelNum = i + 1;
             btn.setBounds(levelPositions[i][0], levelPositions[i][1], BUTTON_SIZE, BUTTON_SIZE);
 
             btn.setHorizontalTextPosition(JButton.CENTER);
@@ -135,7 +131,7 @@ public class MissionPanel extends JPanel {
             btn.setFocusPainted(false);
 
             if (levelNum <= maxUnlockedLevel) {
-
+                // Unlocked level
                 if (shellIcon != null) {
                     btn.setIcon(shellIcon);
                 } else {
@@ -146,14 +142,13 @@ public class MissionPanel extends JPanel {
                 btn.setText(String.valueOf(levelNum));
                 btn.setEnabled(true);
 
-                // Fixed: Use lambda expression with final variable
                 btn.addActionListener(e -> {
-                    System.out.println("Level " + levelNum + " butonuna tıklandı!");
+                    System.out.println("Mission " + levelNum + " clicked!");
                     openGameFrame(levelNum);
                 });
 
             } else {
-
+                // Locked level
                 if (lockedIcon != null) {
                     btn.setIcon(lockedIcon);
                     btn.setDisabledIcon(lockedIcon);
@@ -172,25 +167,84 @@ public class MissionPanel extends JPanel {
     }
 
     private void openGameFrame(int levelNum) {
-        System.out.println("openGameFrame çağrıldı, level: " + levelNum);
+        System.out.println("Opening game frame for Mission " + levelNum);
 
-        // Create a new frame for the game
-        JFrame gameFrame = new JFrame("Level " + levelNum);
+        JFrame gameFrame = new JFrame("Mission " + levelNum);
         gameFrame.setSize(600, 600);
         gameFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         gameFrame.setLocationRelativeTo(null);
         gameFrame.setUndecorated(true);
 
-        // Create and add the Game panel
         Game gamePanel = new Game(levelNum);
+
+        // Set completion listener to receive mission results
+        gamePanel.setCompletionListener(new Game.MissionCompletionListener() {
+            @Override
+            public void onMissionCompleted(int level, List<PhaseData> phaseData) {
+                System.out.println("✅ Mission " + level + " COMPLETED!");
+                System.out.println("=== Phase Performance Data ===");
+
+                long totalTime = 0;
+                for (PhaseData data : phaseData) {
+                    System.out.println(data.toString());
+                    totalTime += data.survivedDuration;
+                }
+
+                System.out.println("Total Mission Time: " + (totalTime / 1000.0) + "s");
+                System.out.println("==============================");
+
+                // Unlock next level
+                if (level < 5) {
+                    unlockLevel(level + 1);
+                }
+
+                gameFrame.dispose();
+            }
+
+            @Override
+            public void onMissionFailed(int level, List<PhaseData> phaseData) {
+                System.out.println("❌ Mission " + level + " FAILED");
+                System.out.println("=== Phase Performance Data (Partial) ===");
+
+                for (PhaseData data : phaseData) {
+                    System.out.println(data.toString());
+                }
+
+                System.out.println("=======================================");
+                gameFrame.dispose();
+            }
+        });
+
         gameFrame.add(gamePanel);
-
         gameFrame.setVisible(true);
-
-        // Request focus for the game panel
         gamePanel.requestFocusInWindow();
 
-        System.out.println("Game frame oluşturuldu ve gösterildi!");
+        System.out.println("Game frame created and shown!");
+    }
+
+    private void unlockLevel(int level) {
+        if (level > maxUnlockedLevel && level <= 5) {
+            maxUnlockedLevel = level;
+            System.out.println("🔓 Mission " + level + " UNLOCKED!");
+
+            // Update button visuals
+            JButton btn = levelButtons.get(level - 1);
+
+            if (shellIcon != null) {
+                btn.setIcon(shellIcon);
+            } else {
+                btn.setBackground(Color.GREEN);
+                btn.setOpaque(true);
+            }
+
+            btn.setText(String.valueOf(level));
+            btn.setEnabled(true);
+
+            final int levelNum = level;
+            btn.addActionListener(e -> openGameFrame(levelNum));
+
+            repaint();
+        }
     }
 
     @Override

@@ -3,7 +3,7 @@ import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D; // Yuvarlak köşeler için gerekli
 
-public class SettingPanel extends JPanel {
+public class SettingPanel extends BasePanel {
 
     public SettingPanel() {
         setBackground(new Color(189, 237, 255));

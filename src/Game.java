@@ -3,6 +3,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -155,8 +157,7 @@ public class Game extends BasePanel {
                         instruction.x,
                         instruction.y,
                         instruction.vx,
-                        instruction.vy,
-                        instruction.size
+                        instruction.vy
                 ));
                 ((Timer)e.getSource()).stop();
             });
@@ -546,8 +547,8 @@ class PatternManager {
                 pattern.addSpawn(0, 650, -50, -baseSpeed, baseSpeed, 30);
                 break;
             case 13: // Multi-directional
-                pattern.addSpawn(0, -50, 300, baseSpeed, 0, 30);
-                pattern.addSpawn(200, 650, 300, -baseSpeed, 0, 30);
+                pattern.addSpawn(0, -50, 300, baseSpeed, 100, 30);
+                pattern.addSpawn(200, 650, 300, -baseSpeed, 100, 30);
                 pattern.addSpawn(400, 300, -50, 0, baseSpeed, 30);
                 pattern.addSpawn(600, 300, 650, 0, -baseSpeed, 30);
                 pattern.addSpawn(800, -50, -50, baseSpeed, baseSpeed, 30);
@@ -599,22 +600,21 @@ class EnemyFish {
     double x, y;
     double vx, vy;
     double phase;
-    int size;
-    private int width;
-    private int height;
+
+    private int width = 100;
+    private int height = 40;
+
     private Image fishImage;
     private boolean facingRight;
 
-    EnemyFish(double x, double y, double vx, double vy, int size) {
+    EnemyFish(double x, double y, double vx, double vy) {
         this.x = x;
         this.y = y;
         this.vx = vx;
         this.vy = vy;
-        this.size = size;
-        this.width = size;
-        this.height = size;
         this.phase = Math.random() * Math.PI * 2;
-        this.facingRight = vx > 0;
+        this.facingRight = vx < 0;
+
         loadFishImage();
     }
 
@@ -622,7 +622,8 @@ class EnemyFish {
         try {
             ImageIcon icon = new ImageIcon("enemy_fish.png");
             if (icon.getImage() != null && icon.getIconWidth() > 0) {
-                fishImage = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+                fishImage = icon.getImage()
+                        .getScaledInstance(width, height, Image.SCALE_SMOOTH);
             } else {
                 fishImage = null;
             }
@@ -635,20 +636,23 @@ class EnemyFish {
         x += vx;
         y += vy;
 
-        // Slight sine wave movement for natural swimming
+        // Daha yumuşak dalga hareketi
         y += Math.sin(phase) * 0.3;
         phase += 0.1;
     }
 
     void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON
+        );
 
         if (fishImage != null) {
             if (facingRight) {
-                g2d.drawImage(fishImage, (int)x, (int)y, width, height, null);
+                g2d.drawImage(fishImage, (int) x, (int) y, width, height, null);
             } else {
-                g2d.drawImage(fishImage, (int)x + width, (int)y, -width, height, null);
+                g2d.drawImage(fishImage, (int) x + width, (int) y, -width, height, null);
             }
         } else {
             drawSimpleFish(g2d);
@@ -659,31 +663,25 @@ class EnemyFish {
         g2d.setColor(new Color(100, 180, 255));
 
         if (facingRight) {
-            g2d.fillOval((int)x, (int)y, width - 5, height - 10);
-            int[] tailX = {(int)x, (int)x - 8, (int)x};
-            int[] tailY = {(int)y + 5, (int)y + (height - 10) / 2, (int)y + height - 15};
+            g2d.fillOval((int) x, (int) y, width - 10, height);
+            int[] tailX = {(int) x, (int) x - 15, (int) x};
+            int[] tailY = {(int) y + 5, (int) y + height / 2, (int) y + height - 5};
             g2d.fillPolygon(tailX, tailY, 3);
-            g2d.setColor(Color.WHITE);
-            g2d.fillOval((int)x + 15, (int)y + 10, 8, 8);
-            g2d.setColor(Color.BLACK);
-            g2d.fillOval((int)x + 17, (int)y + 12, 4, 4);
         } else {
-            g2d.fillOval((int)x + 5, (int)y, width - 5, height - 10);
-            int[] tailX = {(int)x + width, (int)x + width + 8, (int)x + width};
-            int[] tailY = {(int)y + 5, (int)y + (height - 10) / 2, (int)y + height - 15};
+            g2d.fillOval((int) x + 10, (int) y, width - 10, height);
+            int[] tailX = {(int) x + width, (int) x + width + 15, (int) x + width};
+            int[] tailY = {(int) y + 5, (int) y + height / 2, (int) y + height - 5};
             g2d.fillPolygon(tailX, tailY, 3);
-            g2d.setColor(Color.WHITE);
-            g2d.fillOval((int)x + 10, (int)y + 10, 8, 8);
-            g2d.setColor(Color.BLACK);
-            g2d.fillOval((int)x + 12, (int)y + 12, 4, 4);
         }
     }
 
-    public int getX() { return (int)x; }
-    public int getY() { return (int)y; }
+    // 🔍 Collision / ölçüm için
+    public int getX() { return (int) x; }
+    public int getY() { return (int) y; }
     public int getWidth() { return width; }
     public int getHeight() { return height; }
 }
+
 
 // Player class
 class Player {
@@ -840,3 +838,39 @@ class Player {
         return height;
     }
 }
+
+/*
+import java.io.FileWriter;
+import java.io.IOException;
+
+public class ProgressLogger {
+
+    private static final String FILE_NAME = "progress.txt";
+
+    public static void save(
+            int mission,
+            int phase,
+            int density,
+            double speed,
+            long time,
+            boolean success
+    ) {
+        try (FileWriter writer = new FileWriter(FILE_NAME, true)) {
+
+            String line =
+                    "mission=" + mission + ";" +
+                    "phase=" + phase + ";" +
+                    "density=" + density + ";" +
+                    "speed=" + speed + ";" +
+                    "time=" + time + ";" +
+                    "success=" + success;
+
+            writer.write(line + "\n");
+
+        } catch (IOException e) {
+            System.out.println("Progress save error!");
+        }
+    }
+}
+
+ */

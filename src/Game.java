@@ -71,15 +71,15 @@ public class Game extends BasePanel {
         phaseLabel = new JLabel("Phase 0/" + TOTAL_PHASES);
         phaseLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         phaseLabel.setForeground(Color.LIGHT_GRAY);
-        phaseLabel.setBounds(420, 80, 100, 20);
+        phaseLabel.setBounds(525, 30, 100, 20);
         add(phaseLabel);
 
-        // Phase timer (big, prominent)
-        phaseTimerLabel = new JLabel("0.0s");
-        phaseTimerLabel.setFont(new Font("Arial", Font.BOLD, 48));
-        phaseTimerLabel.setForeground(Color.CYAN);
-        phaseTimerLabel.setBounds(250, 120, 150, 60);
-        add(phaseTimerLabel);
+//        // Phase timer (big, prominent)
+//        phaseTimerLabel = new JLabel("0.0s");
+//        phaseTimerLabel.setFont(new Font("Arial", Font.BOLD, 48));
+//        phaseTimerLabel.setForeground(Color.CYAN);
+//        phaseTimerLabel.setBounds(250, 120, 150, 60);
+//        add(phaseTimerLabel);
 
         // Add a back button
         JButton backButton = new JButton("Back");
@@ -376,25 +376,28 @@ public class Game extends BasePanel {
 
         // Update phase timer
         long elapsed = System.currentTimeMillis() - phaseStartTime;
-        phaseTimerLabel.setText(String.format("%.1fs", elapsed / 1000.0));
+//        phaseTimerLabel.setText(String.format("%.1fs", elapsed / 1000.0));
 
         // Update player
         player.update();
 
         // Check collision with enemy fish
+        int paddingX = 22;
+        int paddingY = 6;
+
         Rectangle playerBounds = new Rectangle(
-                player.getX(),
-                player.getY(),
-                player.getWidth(),
-                player.getHeight()
+                player.getX() + paddingX,
+                player.getY() + paddingY,
+                player.getWidth() - (paddingX * 2),
+                player.getHeight() - (paddingY * 2)
         );
 
         for (EnemyFish fish : enemyFishes) {
             Rectangle fishBounds = new Rectangle(
-                    (int)fish.x,
-                    (int)fish.y,
-                    fish.getWidth(),
-                    fish.getHeight()
+                    (int)fish.x + paddingX,
+                    (int)fish.y + paddingY,
+                    fish.getWidth() - (paddingX * 2),
+                    fish.getHeight() - (paddingY * 2)
             );
 
             if (playerBounds.intersects(fishBounds)) {
@@ -489,78 +492,215 @@ class PatternManager {
     private FishPattern createPattern(int mission, int phase) {
         FishPattern pattern = new FishPattern();
 
-        // Base speed increases with mission
-        double baseSpeed = 1.5 + (mission * 0.5);
+        // Mission-based difficulty scaling
+        // Mission 1: baseSpeed = 1.5 (easiest)
+        // Mission 2: baseSpeed = 1.8
+        // Mission 3: baseSpeed = 2.1, etc.
+        double baseSpeed = 1.2 + (mission * 0.3);
+
+        // Additional complexity multiplier for higher missions
+        double complexityFactor = 1.0 + (mission - 1) * 0.15;
+        int extraFish = Math.max(0, (mission - 1)); // More fish in higher missions
 
         switch (phase) {
-            case 0: // Single fish from left
-                pattern.addSpawn(0, -50, 300, baseSpeed, 0, 30);
-                break;
-            case 1: // Single fish from right
-                pattern.addSpawn(0, 650, 300, -baseSpeed, 0, 30);
-                break;
-            case 2: // Two fish from sides
-                pattern.addSpawn(0, -50, 200, baseSpeed, 0, 30);
-                pattern.addSpawn(500, 650, 400, -baseSpeed, 0, 30);
-                break;
-            case 3: // Fish from top
-                pattern.addSpawn(0, 300, -50, 0, baseSpeed, 30);
-                break;
-            case 4: // Fish from bottom
-                pattern.addSpawn(0, 300, 650, 0, -baseSpeed, 30);
-                break;
-            case 5: // Diagonal
-                pattern.addSpawn(0, -50, -50, baseSpeed, baseSpeed, 30);
-                break;
-            case 6: // Cross pattern
-                pattern.addSpawn(0, -50, 300, baseSpeed, 0, 30);
-                pattern.addSpawn(0, 650, 300, -baseSpeed, 0, 30);
-                pattern.addSpawn(0, 300, -50, 0, baseSpeed, 30);
-                pattern.addSpawn(0, 300, 650, 0, -baseSpeed, 30);
-                break;
-            case 7: // Staggered left
-                pattern.addSpawn(0, -50, 150, baseSpeed, 0, 30);
-                pattern.addSpawn(300, -50, 300, baseSpeed, 0, 30);
-                pattern.addSpawn(600, -50, 450, baseSpeed, 0, 30);
-                break;
-            case 8: // Staggered right
-                pattern.addSpawn(0, 650, 150, -baseSpeed, 0, 30);
-                pattern.addSpawn(300, 650, 300, -baseSpeed, 0, 30);
-                pattern.addSpawn(600, 650, 450, -baseSpeed, 0, 30);
-                break;
-            case 9: // Pincer movement
-                pattern.addSpawn(0, -50, 100, baseSpeed, baseSpeed * 0.3, 30);
-                pattern.addSpawn(0, -50, 500, baseSpeed, -baseSpeed * 0.3, 30);
-                break;
-            case 10: // Wave pattern
-                for (int i = 0; i < 4; i++) {
-                    pattern.addSpawn(i * 400, -50, 150 + i * 100, baseSpeed, 0, 25);
+            case 0: // Warm-up: Single horizontal tracking
+                pattern.addSpawn(0, -50, 300, baseSpeed * 0.9, 0, 30);
+                // Higher missions: Add challenge fish
+                if (mission >= 2) {
+                    pattern.addSpawn(800, 650, 200, -baseSpeed * 0.9, 0, 30);
                 }
                 break;
-            case 11: // Vertical sweep
-                pattern.addSpawn(0, 300, -50, 0, baseSpeed, 30);
-                pattern.addSpawn(400, 300, -50, 0, baseSpeed, 30);
-                pattern.addSpawn(800, 300, -50, 0, baseSpeed, 30);
+
+            case 1: // Warm-up: Opposite direction tracking
+                pattern.addSpawn(0, 650, 300, -baseSpeed * 0.9, 0, 30);
+                if (mission >= 2) {
+                    pattern.addSpawn(800, -50, 400, baseSpeed * 0.9, 0, 30);
+                }
                 break;
-            case 12: // Diagonal cross
-                pattern.addSpawn(0, -50, -50, baseSpeed, baseSpeed, 30);
-                pattern.addSpawn(0, 650, -50, -baseSpeed, baseSpeed, 30);
+
+            case 2: // Warm-up: Vertical tracking
+                pattern.addSpawn(0, 300, -50, 0, baseSpeed * 0.9, 30);
+                if (mission >= 2) {
+                    pattern.addSpawn(700, 300, 650, 0, -baseSpeed * 0.9, 30);
+                }
                 break;
-            case 13: // Multi-directional
-                pattern.addSpawn(0, -50, 300, baseSpeed, 100, 30);
-                pattern.addSpawn(200, 650, 300, -baseSpeed, 100, 30);
-                pattern.addSpawn(400, 300, -50, 0, baseSpeed, 30);
-                pattern.addSpawn(600, 300, 650, 0, -baseSpeed, 30);
-                pattern.addSpawn(800, -50, -50, baseSpeed, baseSpeed, 30);
+
+            case 3: // Diagonal pursuit
+                pattern.addSpawn(0, -50, -50, baseSpeed, baseSpeed * 0.8, 30);
+                pattern.addSpawn(600, 650, 650, -baseSpeed, -baseSpeed * 0.8, 30);
+                // Mission 2+: Add crossing diagonal
+                if (mission >= 2) {
+                    pattern.addSpawn(300, 650, -50, -baseSpeed, baseSpeed * 0.8, 30);
+                }
+                if (mission >= 3) {
+                    pattern.addSpawn(300, -50, 650, baseSpeed, -baseSpeed * 0.8, 30);
+                }
                 break;
-            case 14: // Final challenge
-                pattern.addSpawn(0, -50, 200, baseSpeed, 0, 30);
-                pattern.addSpawn(0, 650, 400, -baseSpeed, 0, 30);
-                pattern.addSpawn(300, 300, -50, 0, baseSpeed, 30);
-                pattern.addSpawn(600, -50, 500, baseSpeed, -baseSpeed * 0.2, 30);
-                pattern.addSpawn(900, 650, 100, -baseSpeed, baseSpeed * 0.2, 30);
-                pattern.addSpawn(1200, 300, 650, 0, -baseSpeed, 30);
+
+            case 4: // Smooth pursuit
+                pattern.addSpawn(0, -50, 150, baseSpeed * 1.1, 0, 30);
+                pattern.addSpawn(500, -50, 450, baseSpeed * 1.1, 0, 30);
+                pattern.addSpawn(1000, 650, 300, -baseSpeed * 1.1, 0, 30);
+                // Higher missions: More waves
+                if (mission >= 3) {
+                    pattern.addSpawn(1500, -50, 300, baseSpeed * 1.1, 0, 30);
+                }
                 break;
+
+            case 5: // Saccadic training
+                pattern.addSpawn(0, -50, 100, baseSpeed * 1.2, 0, 30);
+                pattern.addSpawn(600, 650, 500, -baseSpeed * 1.2, 0, 30);
+                pattern.addSpawn(1200, 300, -50, 0, baseSpeed * 1.2, 30);
+                // Mission 2+: Faster transitions
+                if (mission >= 2) {
+                    pattern.addSpawn(1600, 300, 650, 0, -baseSpeed * 1.2, 30);
+                }
+                if (mission >= 4) {
+                    pattern.addSpawn(2000, -50, 300, baseSpeed * 1.2, 0, 30);
+                }
+                break;
+
+            case 6: // Convergence
+                pattern.addSpawn(0, -50, 200, baseSpeed * complexityFactor, baseSpeed * 0.5, 30);
+                pattern.addSpawn(0, -50, 400, baseSpeed * complexityFactor, -baseSpeed * 0.5, 30);
+                pattern.addSpawn(700, 650, 200, -baseSpeed * complexityFactor, baseSpeed * 0.5, 30);
+                pattern.addSpawn(700, 650, 400, -baseSpeed * complexityFactor, -baseSpeed * 0.5, 30);
+                // Mission 3+: Add vertical convergence
+                if (mission >= 3) {
+                    pattern.addSpawn(1400, 300, -50, 0, baseSpeed * complexityFactor, 30);
+                    pattern.addSpawn(1400, 300, 650, 0, -baseSpeed * complexityFactor, 30);
+                }
+                break;
+
+            case 7: // Divergence
+                pattern.addSpawn(0, 300, 200, 0, -baseSpeed * 0.6, 30);
+                pattern.addSpawn(0, 300, 400, 0, baseSpeed * 0.6, 30);
+                pattern.addSpawn(700, 300, 300, baseSpeed * 0.8 * complexityFactor, 0, 30);
+                pattern.addSpawn(700, 300, 300, -baseSpeed * 0.8 * complexityFactor, 0, 30);
+                if (mission >= 3) {
+                    pattern.addSpawn(1400, 150, 300, baseSpeed * 0.7, baseSpeed * 0.5, 30);
+                    pattern.addSpawn(1400, 450, 300, baseSpeed * 0.7, -baseSpeed * 0.5, 30);
+                }
+                break;
+
+            case 8: // Figure-8 simulation
+                pattern.addSpawn(0, -50, 150, baseSpeed * 1.1 * complexityFactor, baseSpeed * 0.4, 30);
+                pattern.addSpawn(400, 650, 150, -baseSpeed * 1.1 * complexityFactor, baseSpeed * 0.4, 30);
+                pattern.addSpawn(800, 650, 450, -baseSpeed * 1.1 * complexityFactor, -baseSpeed * 0.4, 30);
+                pattern.addSpawn(1200, -50, 450, baseSpeed * 1.1 * complexityFactor, -baseSpeed * 0.4, 30);
+                // Mission 2+: Double figure-8
+                if (mission >= 2) {
+                    pattern.addSpawn(1600, -50, 300, baseSpeed * 1.1 * complexityFactor, 0, 30);
+                    pattern.addSpawn(2000, 650, 300, -baseSpeed * 1.1 * complexityFactor, 0, 30);
+                }
+                break;
+
+            case 9: // Peripheral awareness
+                pattern.addSpawn(0, -50, 50, baseSpeed * complexityFactor, 0, 30);
+                pattern.addSpawn(0, -50, 550, baseSpeed * complexityFactor, 0, 30);
+                pattern.addSpawn(500, 650, 150, -baseSpeed * complexityFactor, 0, 30);
+                pattern.addSpawn(500, 650, 450, -baseSpeed * complexityFactor, 0, 30);
+                pattern.addSpawn(1000, 100, -50, 0, baseSpeed * complexityFactor, 30);
+                pattern.addSpawn(1000, 500, -50, 0, baseSpeed * complexityFactor, 30);
+                // Mission 3+: Add diagonal peripheral
+                if (mission >= 3) {
+                    pattern.addSpawn(1500, -50, -50, baseSpeed * complexityFactor, baseSpeed * complexityFactor, 30);
+                    pattern.addSpawn(1500, 650, 650, -baseSpeed * complexityFactor, -baseSpeed * complexityFactor, 30);
+                }
+                break;
+
+            case 10: // Vergence training
+                pattern.addSpawn(0, -50, 150, baseSpeed * 1.2 * complexityFactor, baseSpeed * 0.3, 30);
+                pattern.addSpawn(0, -50, 450, baseSpeed * 1.2 * complexityFactor, -baseSpeed * 0.3, 30);
+                pattern.addSpawn(500, 650, 450, -baseSpeed * 1.2 * complexityFactor, baseSpeed * 0.3, 30);
+                pattern.addSpawn(500, 650, 150, -baseSpeed * 1.2 * complexityFactor, -baseSpeed * 0.3, 30);
+                pattern.addSpawn(1000, 300, -50, 0, baseSpeed * 1.2 * complexityFactor, 30);
+                // Mission 4+: Add more crossing patterns
+                if (mission >= 4) {
+                    pattern.addSpawn(1500, 300, 650, 0, -baseSpeed * 1.2 * complexityFactor, 30);
+                    pattern.addSpawn(2000, -50, 300, baseSpeed * 1.2 * complexityFactor, 0, 30);
+                }
+                break;
+
+            case 11: // Rapid tracking
+                int fishCount = 6 + extraFish;
+                for (int i = 0; i < fishCount; i++) {
+                    int delay = i * 300;
+                    if (i % 2 == 0) {
+                        pattern.addSpawn(delay, -50, 200 + (i * 50), baseSpeed * 1.3 * complexityFactor, 0, 30);
+                    } else {
+                        pattern.addSpawn(delay, 650, 200 + (i * 50), -baseSpeed * 1.3 * complexityFactor, 0, 30);
+                    }
+                }
+                break;
+
+            case 12: // Circular pursuit
+                pattern.addSpawn(0, -50, 300, baseSpeed * 1.1 * complexityFactor, baseSpeed * 0.5, 30);
+                pattern.addSpawn(400, 300, -50, baseSpeed * 0.5 * complexityFactor, baseSpeed * 1.1, 30);
+                pattern.addSpawn(800, 650, 300, -baseSpeed * 1.1 * complexityFactor, -baseSpeed * 0.5, 30);
+                pattern.addSpawn(1200, 300, 650, -baseSpeed * 0.5 * complexityFactor, -baseSpeed * 1.1, 30);
+                pattern.addSpawn(1600, -50, 150, baseSpeed * 1.1 * complexityFactor, baseSpeed * 0.8, 30);
+                pattern.addSpawn(1600, 650, 450, -baseSpeed * 1.1 * complexityFactor, -baseSpeed * 0.8, 30);
+                // Mission 3+: Counter-rotating circles
+                if (mission >= 3) {
+                    pattern.addSpawn(2000, 650, 150, -baseSpeed * 1.1 * complexityFactor, baseSpeed * 0.8, 30);
+                    pattern.addSpawn(2000, -50, 450, baseSpeed * 1.1 * complexityFactor, -baseSpeed * 0.8, 30);
+                }
+                break;
+
+            case 13: // Advanced vergence
+                pattern.addSpawn(0, -50, 100, baseSpeed * 1.2 * complexityFactor, baseSpeed * 0.6, 30);
+                pattern.addSpawn(0, -50, 500, baseSpeed * 1.2 * complexityFactor, -baseSpeed * 0.6, 30);
+                pattern.addSpawn(500, 650, 100, -baseSpeed * 1.2 * complexityFactor, baseSpeed * 0.6, 30);
+                pattern.addSpawn(500, 650, 500, -baseSpeed * 1.2 * complexityFactor, -baseSpeed * 0.6, 30);
+                pattern.addSpawn(1000, 150, -50, baseSpeed * 0.4 * complexityFactor, baseSpeed * 1.2, 30);
+                pattern.addSpawn(1000, 450, -50, -baseSpeed * 0.4 * complexityFactor, baseSpeed * 1.2, 30);
+                pattern.addSpawn(1500, 300, 650, 0, -baseSpeed * 1.3 * complexityFactor, 30);
+                // Mission 5: Add ultimate challenge
+                if (mission >= 5) {
+                    pattern.addSpawn(2000, -50, -50, baseSpeed * 1.3 * complexityFactor, baseSpeed * 1.3, 30);
+                    pattern.addSpawn(2000, 650, 650, -baseSpeed * 1.3 * complexityFactor, -baseSpeed * 1.3, 30);
+                }
+                break;
+
+            case 14: // FINAL BOSS
+                double finalSpeed = baseSpeed * 1.4 * complexityFactor;
+
+                // Fast horizontal pursuit
+                pattern.addSpawn(0, -50, 200, finalSpeed, 0, 30);
+                pattern.addSpawn(0, 650, 400, -finalSpeed, 0, 30);
+
+                // Diagonal crossing
+                pattern.addSpawn(500, -50, -50, finalSpeed * 0.9, finalSpeed * 0.9, 30);
+                pattern.addSpawn(500, 650, 650, -finalSpeed * 0.9, -finalSpeed * 0.9, 30);
+
+                // Converging paths
+                pattern.addSpawn(1000, -50, 300, finalSpeed * 0.95, finalSpeed * 0.3, 30);
+                pattern.addSpawn(1000, 650, 300, -finalSpeed * 0.95, finalSpeed * 0.3, 30);
+
+                // Vertical chase
+                pattern.addSpawn(1500, 300, -50, 0, finalSpeed, 30);
+                pattern.addSpawn(1800, 300, 650, 0, -finalSpeed, 30);
+
+                // Final diagonal sweep
+                pattern.addSpawn(2100, -50, 450, finalSpeed * 0.95, -finalSpeed * 0.5, 30);
+                pattern.addSpawn(2100, 650, 150, -finalSpeed * 0.95, finalSpeed * 0.5, 30);
+
+                // Mission 2+: Add chaos waves
+                if (mission >= 2) {
+                    pattern.addSpawn(2500, 300, -50, 0, finalSpeed, 30);
+                    pattern.addSpawn(2800, -50, 300, finalSpeed, 0, 30);
+                }
+
+                // Mission 3+: Add pincer finale
+                if (mission >= 3) {
+                    pattern.addSpawn(3100, -50, 100, finalSpeed, finalSpeed * 0.4, 30);
+                    pattern.addSpawn(3100, -50, 500, finalSpeed, -finalSpeed * 0.4, 30);
+                    pattern.addSpawn(3100, 650, 100, -finalSpeed, finalSpeed * 0.4, 30);
+                    pattern.addSpawn(3100, 650, 500, -finalSpeed, -finalSpeed * 0.4, 30);
+                }
+                break;
+
             default:
                 pattern.addSpawn(0, -50, 300, baseSpeed, 0, 30);
         }
@@ -620,7 +760,8 @@ class EnemyFish {
 
     private void loadFishImage() {
         try {
-            ImageIcon icon = new ImageIcon("enemy_fish.png");
+            String imagePath = LazyEyeConfig.getEnemyImagePath();
+            ImageIcon icon = new ImageIcon(imagePath);
             if (icon.getImage() != null && icon.getIconWidth() > 0) {
                 fishImage = icon.getImage()
                         .getScaledInstance(width, height, Image.SCALE_SMOOTH);
@@ -710,7 +851,8 @@ class Player {
 
     private void loadFishImage() {
         try {
-            ImageIcon icon = new ImageIcon("player_fish.png");
+            String imagePath = LazyEyeConfig.getPlayerImagePath();
+            ImageIcon icon = new ImageIcon(imagePath);
             if (icon.getImage() != null && icon.getIconWidth() > 0) {
                 fishImage = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
             } else {

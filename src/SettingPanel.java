@@ -1,6 +1,7 @@
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D; // Yuvarlak köşeler için gerekli
 
 public class SettingPanel extends BasePanel {
@@ -67,11 +68,44 @@ public class SettingPanel extends BasePanel {
         slider.addChangeListener(e -> {
             int value = slider.getValue(); // 0 - 100
 
-            float min = -80f;
-            float max = 6f;
-
-            float dB = min + (value / 100f) * (max - min);
+            float t = value / 100f;
+            float dB = -70f + 76f * (float) Math.pow(t, 0.42);
             SoundManager.setVolume(dB);
+        });
+        JLabel eyeTitle = new JLabel("Lazy Eye Settings");
+        eyeTitle.setBounds(35, 150, 200, 60);
+        eyeTitle.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
+        eyeTitle.setForeground(new Color(0, 60, 120));
+        add(eyeTitle);
+        JLabel leftEye = new JLabel("Left Eye");
+        leftEye.setBounds(35, 170, 200, 60);
+        leftEye.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
+        leftEye.setForeground(new Color(0, 60, 120));
+        add(leftEye);
+        JLabel rightEye = new JLabel("Right Eye");
+        rightEye.setBounds(150, 170, 200, 60);
+        rightEye.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
+        eyeTitle.setForeground(new Color(0, 60, 120));
+        add(rightEye);
+        JCheckBox leftEyeCheck = new JCheckBox();
+        leftEyeCheck.setBounds(100, 175, 50, 50);
+        add(leftEyeCheck);
+        JCheckBox rightEyeCheck = new JCheckBox();
+        rightEyeCheck.setBounds(220, 175, 50, 50);
+        add(rightEyeCheck);
+
+        leftEyeCheck.addActionListener(e -> {
+            if (leftEyeCheck.isSelected()) {
+                rightEyeCheck.setSelected(false);
+                LazyEyeConfig.setRightEye(false); // Left eye = normal images
+            }
+        });
+
+        rightEyeCheck.addActionListener(e -> {
+            if (rightEyeCheck.isSelected()) {
+                leftEyeCheck.setSelected(false);
+                LazyEyeConfig.setRightEye(true); // Right eye = swapped images
+            }
         });
 
     }

@@ -1,9 +1,10 @@
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D; // Yuvarlak köşeler için gerekli
 
-public class SettingPanel extends JPanel {
+public class SettingPanel extends BasePanel {
 
     public SettingPanel() {
         setBackground(new Color(189, 237, 255));
@@ -31,26 +32,24 @@ public class SettingPanel extends JPanel {
         });
         add(closeBtn);
 
-        // ---- Voice Button (Senin istediğin gibi duruyor) ----
-        // Buraya "voice.png" veya "sound.png" gibi bir ikon ekleyeceksin sanırım
-        ImageIcon iconClose = new ImageIcon(".png");
-        Image scaledClose = (iconClose.getImage() != null) ?
-                iconClose.getImage().getScaledInstance(90, 60, Image.SCALE_SMOOTH) : null;
-        ImageIcon scaledIconClose = (scaledClose != null) ? new ImageIcon(scaledClose) : null;
-
-        JButton closeVoice = new JButton(scaledIconClose);
-        if (scaledIconClose == null) closeVoice.setText("-");
-
-        closeVoice.setBounds(10, 10, 60, 60);
-        closeVoice.setBorderPainted(false);
-        closeVoice.setContentAreaFilled(false);
-        closeVoice.setFocusPainted(false);
-        closeVoice.setOpaque(false); // Düzeltme: closeBtn yerine closeVoice yapıldı
-
-        closeVoice.addActionListener(e -> {
-            // Buraya ses açma kapama kodlarını ekleyeceksin
-        });
-        add(closeVoice);
+//        ImageIcon iconClose = new ImageIcon(".png");
+//        Image scaledClose = (iconClose.getImage() != null) ?
+//                iconClose.getImage().getScaledInstance(90, 60, Image.SCALE_SMOOTH) : null;
+//        ImageIcon scaledIconClose = (scaledClose != null) ? new ImageIcon(scaledClose) : null;
+//
+//        JButton closeVoice = new JButton(scaledIconClose);
+//        if (scaledIconClose == null) closeVoice.setText("-");
+//
+//        closeVoice.setBounds(10, 10, 60, 60);
+//        closeVoice.setBorderPainted(false);
+//        closeVoice.setContentAreaFilled(false);
+//        closeVoice.setFocusPainted(false);
+//        closeVoice.setOpaque(false); // Düzeltme: closeBtn yerine closeVoice yapıldı
+//
+//        closeVoice.addActionListener(e -> {
+//
+//        });
+//        add(closeVoice);
 
         // ---- SLIDER KISMI ----
         JSlider slider = getJSlider();
@@ -67,18 +66,56 @@ public class SettingPanel extends JPanel {
         music.setForeground(new Color(0, 60, 120));
         add(music);
         slider.addChangeListener(e -> {
-            int volume = slider.getValue();
-            System.out.println(volume);
-            //SoundManager.setVolume(volume / 100f);
+            int value = slider.getValue(); // 0 - 100
+
+            float t = value / 100f;
+            float dB = -70f + 76f * (float) Math.pow(t, 0.42);
+            SoundManager.setVolume(dB);
         });
+        JLabel eyeTitle = new JLabel("Lazy Eye Settings");
+        eyeTitle.setBounds(35, 150, 200, 60);
+        eyeTitle.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
+        eyeTitle.setForeground(new Color(0, 60, 120));
+        add(eyeTitle);
+        JLabel leftEye = new JLabel("Left Eye");
+        leftEye.setBounds(35, 170, 200, 60);
+        leftEye.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
+        leftEye.setForeground(new Color(0, 60, 120));
+        add(leftEye);
+        JLabel rightEye = new JLabel("Right Eye");
+        rightEye.setBounds(150, 170, 200, 60);
+        rightEye.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
+        eyeTitle.setForeground(new Color(0, 60, 120));
+        add(rightEye);
+        JCheckBox leftEyeCheck = new JCheckBox();
+        leftEyeCheck.setBounds(100, 175, 50, 50);
+        add(leftEyeCheck);
+        JCheckBox rightEyeCheck = new JCheckBox();
+        rightEyeCheck.setBounds(220, 175, 50, 50);
+        add(rightEyeCheck);
+
+        leftEyeCheck.addActionListener(e -> {
+            if (leftEyeCheck.isSelected()) {
+                rightEyeCheck.setSelected(false);
+                LazyEyeConfig.setRightEye(false); // Sets to Left Eye mode
+
+            }
+        });
+
+        rightEyeCheck.addActionListener(e -> {
+            if (rightEyeCheck.isSelected()) {
+                leftEyeCheck.setSelected(false);
+                LazyEyeConfig.setRightEye(true); // Sets to Right Eye mode
+
+            }
+        });
+
     }
 
     private static JSlider getJSlider() {
         JSlider slider = new JSlider();
-        // Slider boyutunu biraz artırdım ki altın çerçeve sığsın
         slider.setBounds(10, 100, 275, 60);
 
-        // Tasarım gereği standart çizgileri kapatıyoruz (Daha şık durması için)
         slider.setMajorTickSpacing(10);
         slider.setPaintTicks(false);
         slider.setPaintLabels(true);
@@ -86,12 +123,9 @@ public class SettingPanel extends JPanel {
         slider.setMaximum(100);
         slider.setValue(50); // Başlangıç değeri
 
-        // 1. Slider topu için İSTİRİDYE resmini yükle
-        // Projende "shell_icon.png" adında bir resim olduğundan emin ol
         ImageIcon sliderIcon = new ImageIcon("level_active.png");
         Image sliderImg = (sliderIcon.getImage() != null) ? sliderIcon.getImage() : null;
 
-        // 2. Yeni Deniz Temalı Tasarımı Uygula
         slider.setUI(new SeaSliderUI(slider, sliderImg));
 
         // 3. Arka planı şeffaf yap
@@ -145,10 +179,17 @@ class SeaSliderUI extends BasicSliderUI {
         g2d.fillRoundRect(trackRect.x + 4, trackY + 2, w - 8, h - 4, TRACK_ARC, TRACK_ARC);
 
         // --- C) DOLU KISIM (SOL TARAF - CAM GÖBEĞİ) ---
-        int fillWidth = thumbRect.x - trackRect.x + (thumbRect.width / 2);
+        int min = slider.getMinimum();
+        int max = slider.getMaximum();
+        int value = slider.getValue();
 
-        // Sınır koruması
-        if (fillWidth < TRACK_ARC) fillWidth = TRACK_ARC;
+        int innerX = trackRect.x + 4;
+        int innerW = w - 8;
+
+        float percent = (float)(value - min) / (float)(max - min);
+
+        int fillWidth = (int)(innerW * percent);
+
         if (fillWidth > w) fillWidth = w;
 
         // Parlak turkuaz gradient
@@ -163,7 +204,8 @@ class SeaSliderUI extends BasicSliderUI {
         g2d.setClip(innerTrack);
 
         g2d.setPaint(cyanGradient);
-        g2d.fillRect(trackRect.x, trackY, fillWidth, h);
+        g2d.fillRect(innerX, trackY, fillWidth, h);
+
 
         g2d.setClip(oldClip);
     }

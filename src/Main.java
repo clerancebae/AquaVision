@@ -1,9 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
-import java.awt.Taskbar; // <--- 1. Add this import
+import java.awt.Taskbar;
+import javax.sound.sampled.*;
 
-void main() {
+
+void main() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
     JFrame frame = new JFrame();
     frame.setSize(600, 600);
     URL url = getClass().getResource("/appLogo.png");
@@ -29,10 +31,14 @@ void main() {
             System.out.println("There was a security exception for: 'taskbar.setIconImage'");
         }
     }
+    SoundManager.init();
+
 
     StartPanel panel = new StartPanel();
     frame.add(panel);
     frame.setUndecorated(true);
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);
+
+
 }

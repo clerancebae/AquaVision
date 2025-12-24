@@ -32,24 +32,24 @@ public class SettingPanel extends BasePanel {
         });
         add(closeBtn);
 
-        ImageIcon iconClose = new ImageIcon(".png");
-        Image scaledClose = (iconClose.getImage() != null) ?
-                iconClose.getImage().getScaledInstance(90, 60, Image.SCALE_SMOOTH) : null;
-        ImageIcon scaledIconClose = (scaledClose != null) ? new ImageIcon(scaledClose) : null;
-
-        JButton closeVoice = new JButton(scaledIconClose);
-        if (scaledIconClose == null) closeVoice.setText("-");
-
-        closeVoice.setBounds(10, 10, 60, 60);
-        closeVoice.setBorderPainted(false);
-        closeVoice.setContentAreaFilled(false);
-        closeVoice.setFocusPainted(false);
-        closeVoice.setOpaque(false); // Düzeltme: closeBtn yerine closeVoice yapıldı
-
-        closeVoice.addActionListener(e -> {
-
-        });
-        add(closeVoice);
+//        ImageIcon iconClose = new ImageIcon(".png");
+//        Image scaledClose = (iconClose.getImage() != null) ?
+//                iconClose.getImage().getScaledInstance(90, 60, Image.SCALE_SMOOTH) : null;
+//        ImageIcon scaledIconClose = (scaledClose != null) ? new ImageIcon(scaledClose) : null;
+//
+//        JButton closeVoice = new JButton(scaledIconClose);
+//        if (scaledIconClose == null) closeVoice.setText("-");
+//
+//        closeVoice.setBounds(10, 10, 60, 60);
+//        closeVoice.setBorderPainted(false);
+//        closeVoice.setContentAreaFilled(false);
+//        closeVoice.setFocusPainted(false);
+//        closeVoice.setOpaque(false); // Düzeltme: closeBtn yerine closeVoice yapıldı
+//
+//        closeVoice.addActionListener(e -> {
+//
+//        });
+//        add(closeVoice);
 
         // ---- SLIDER KISMI ----
         JSlider slider = getJSlider();
@@ -97,14 +97,16 @@ public class SettingPanel extends BasePanel {
         leftEyeCheck.addActionListener(e -> {
             if (leftEyeCheck.isSelected()) {
                 rightEyeCheck.setSelected(false);
-                LazyEyeConfig.setRightEye(false); // Left eye = normal images
+                LazyEyeConfig.setRightEye(false); // Sets to Left Eye mode
+
             }
         });
 
         rightEyeCheck.addActionListener(e -> {
             if (rightEyeCheck.isSelected()) {
                 leftEyeCheck.setSelected(false);
-                LazyEyeConfig.setRightEye(true); // Right eye = swapped images
+                LazyEyeConfig.setRightEye(true); // Sets to Right Eye mode
+
             }
         });
 

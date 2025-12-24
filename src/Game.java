@@ -71,7 +71,7 @@ public class Game extends BasePanel {
         phaseLabel = new JLabel("Phase 0/" + TOTAL_PHASES);
         phaseLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         phaseLabel.setForeground(Color.LIGHT_GRAY);
-        phaseLabel.setBounds(525, 30, 100, 20);
+        phaseLabel.setBounds(520, 30, 100, 20);
         add(phaseLabel);
 
 //        // Phase timer (big, prominent)
@@ -434,7 +434,7 @@ public class Game extends BasePanel {
 
         // Black background (dichoptic requirement)
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(Color.BLACK);
+        g2d.setColor(new Color(0,0,0));
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
         // Draw enemy fish
@@ -821,6 +821,10 @@ class EnemyFish {
     public int getY() { return (int) y; }
     public int getWidth() { return width; }
     public int getHeight() { return height; }
+    // Add this inside the EnemyFish class
+    public void reloadSkin() {
+        loadFishImage(); // Reruns the logic to check LazyEyeConfig again
+    }
 }
 
 
@@ -978,6 +982,10 @@ class Player {
 
     public int getHeight() {
         return height;
+    }
+    // Add this inside the Player class
+    public void reloadSkin() {
+        loadFishImage(); // Reruns the logic to check LazyEyeConfig again
     }
 }
 

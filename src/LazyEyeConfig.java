@@ -1,4 +1,5 @@
 public class LazyEyeConfig {
+    // Default to false (Left Eye/Normal)
     private static boolean isRightEyeSelected = false;
 
     public static void setRightEye(boolean selected) {
@@ -10,12 +11,20 @@ public class LazyEyeConfig {
     }
 
     public static String getPlayerImagePath() {
-        if (isRightEyeSelected) return "enemy_fish.png";
-        return "player_fish.png";
+        if (isRightEyeSelected) {
+            // Right Eye Rule: Player becomes Red Happy
+            return "red_happy_fish.png";
+        }
+        // Left Eye Rule (Default): Player is Blue Happy
+        return "blue_happy_fish.png";
     }
 
     public static String getEnemyImagePath() {
-        if (isRightEyeSelected) return "player_fish.png";
-        return "enemy_fish.png";
+        if (isRightEyeSelected) {
+            // Right Eye Rule: Enemy becomes Blue Horrible
+            return "blue_horror_fish.png";
+        }
+        // Left Eye Rule (Default): Enemy is Red Horrible
+        return "red_horror_fish.png";
     }
 }

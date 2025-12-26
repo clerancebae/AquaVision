@@ -434,7 +434,7 @@ public class Game extends BasePanel {
 
         // Black background (dichoptic requirement)
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setColor(new Color(0,0,0));
+        g2d.setColor(new Color(8, 8, 8));
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
         // Draw enemy fish

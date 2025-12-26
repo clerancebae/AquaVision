@@ -13,18 +13,18 @@ public class LazyEyeConfig {
     public static String getPlayerImagePath() {
         if (isRightEyeSelected) {
             // Right Eye Rule: Player becomes Red Happy
-            return "dz_left_blue_fish.png";
+            return "dz_leftf_blue_fish.png";
         }
         // Left Eye Rule (Default): Player is Blue Happy
-        return "dzleft_red_fish.png";
+        return "dzleftsd_red_fish.png";
     }
 
     public static String getEnemyImagePath() {
         if (isRightEyeSelected) {
             // Right Eye Rule: Enemy becomes Blue Horrible
-            return "dzleft_red_fish.png";
+            return "dzlgeft_red_fish.png";
         }
         // Left Eye Rule (Default): Enemy is Red Horrible
-        return "dz_left_blue_fish.png";
+        return "dz_lefft_blue_fish.png";
     }
 }

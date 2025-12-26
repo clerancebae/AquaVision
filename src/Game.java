@@ -5,6 +5,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,22 +27,22 @@ public class Game extends BasePanel {
     private long phaseStartTime;
     private List<PhaseData> phaseRecords = new ArrayList<>();
 
-    // Fish spawning system (pattern-based)
+    // Fish spawning system
     private final List<EnemyFish> enemyFishes = new ArrayList<>();
     private PatternManager patternManager;
-    private Timer patternTimer;
 
     // UI Elements
     private JProgressBar progressBar;
-    private JLabel phaseTimerLabel;
     private JLabel phaseLabel;
 
-    // Mission completion callback
     private MissionCompletionListener completionListener;
 
     public Game(int levelNumber) {
         super();
         this.levelNumber = levelNumber;
+
+        DatabaseManager.initialize();
+        DatabaseManager.incrementAttempt(levelNumber);
 
         setLayout(null);
         setFocusable(true);
@@ -61,7 +65,6 @@ public class Game extends BasePanel {
         // Phase progress bar (visual dots)
         progressBar = new JProgressBar(0, TOTAL_PHASES);
         progressBar.setValue(0);
-        progressBar.setStringPainted(false);
         progressBar.setBounds(200, 80, 200, 20);
         progressBar.setForeground(new Color(0, 255, 100));
         progressBar.setBackground(new Color(50, 50, 50));
@@ -74,18 +77,11 @@ public class Game extends BasePanel {
         phaseLabel.setBounds(520, 30, 100, 20);
         add(phaseLabel);
 
-//        // Phase timer (big, prominent)
-//        phaseTimerLabel = new JLabel("0.0s");
-//        phaseTimerLabel.setFont(new Font("Arial", Font.BOLD, 48));
-//        phaseTimerLabel.setForeground(Color.CYAN);
-//        phaseTimerLabel.setBounds(250, 120, 150, 60);
-//        add(phaseTimerLabel);
 
         // Add a back button
         JButton backButton = new JButton("Back");
         backButton.setBounds(20, 20, 100, 40);
         backButton.setFont(new Font("Arial", Font.BOLD, 16));
-        backButton.setFocusPainted(false);
         backButton.addActionListener(e -> returnToMissionPanel());
         add(backButton);
 
@@ -131,21 +127,15 @@ public class Game extends BasePanel {
         currentPhase = phase;
         phaseStartTime = System.currentTimeMillis();
 
-        // Create phase data record
         PhaseData data = new PhaseData(levelNumber, currentPhase + 1);
         phaseRecords.add(data);
 
-        // Clear existing enemies
         enemyFishes.clear();
 
-        // Update UI
         progressBar.setValue(currentPhase);
         phaseLabel.setText("Phase " + (currentPhase + 1) + "/" + TOTAL_PHASES);
 
-        // Start pattern spawning
         spawnPattern(phase);
-
-        System.out.println("Phase " + (currentPhase + 1) + " started!");
     }
 
     private void spawnPattern(int phase) {
@@ -167,130 +157,186 @@ public class Game extends BasePanel {
     }
 
     private void advancePhase() {
-        // Complete current phase
         PhaseData currentData = phaseRecords.get(phaseRecords.size() - 1);
         currentData.complete(true);
 
-        System.out.println("Phase " + (currentPhase + 1) + " completed in " +
-                (currentData.survivedDuration / 1000.0) + "s");
+        DatabaseManager.updateHighestPhase(levelNumber, currentPhase);
 
         if (currentPhase + 1 >= TOTAL_PHASES) {
-            // Mission completed!
             completeMission();
         } else {
-            // Start next phase
             startPhase(currentPhase + 1);
         }
     }
-
     private void completeMission() {
         gameTimer.stop();
         isGameOver = true;
 
-        // Show completion dialog
-        JDialog completionDialog = new JDialog(
+        DatabaseManager.incrementCompletion(levelNumber);
+        DatabaseManager.updateHighestPhase(levelNumber, TOTAL_PHASES - 1);
+
+        String progressReport = DatabaseManager.getProgressReport(levelNumber);
+
+        long totalTime = 0;
+        for (PhaseData data : phaseRecords) totalTime += data.survivedDuration;
+        double totalSeconds = totalTime / 1000.0;
+
+        JDialog dialog = new JDialog(
                 (JFrame) SwingUtilities.getWindowAncestor(this),
                 "Mission Complete!",
                 true
         );
 
-        JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(new Color(189, 237, 255));
-        panel.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 30, 15, 30));
 
-        JLabel title = new JLabel("🎉 Mission " + levelNumber + " Complete! 🎉", SwingConstants.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 24));
-        title.setForeground(Color.BLACK);
+        JLabel title = new JLabel("🎉 CONGRATS! 🎉");
+        title.setFont(new Font("Arial", Font.BOLD, 26));
+        title.setForeground(new Color(0, 100, 200));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Calculate total time
-        long totalTime = 0;
-        for (PhaseData data : phaseRecords) {
-            totalTime += data.survivedDuration;
-        }
+        JLabel missionLabel = new JLabel("Mission " + levelNumber + " Completed!");
+        missionLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        missionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel timeLabel = new JLabel("Total Time: " + (totalTime / 1000.0) + "s", SwingConstants.CENTER);
-        timeLabel.setFont(new Font("Arial", Font.PLAIN, 18));
-        timeLabel.setForeground(Color.BLACK);
+        JLabel timeLabel = new JLabel("Total Time: " + String.format("%.1f", totalSeconds) + " seconds");
+        timeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        timeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JButton continueButton = new JButton("Continue");
-        continueButton.setFont(new Font("Arial", Font.BOLD, 16));
-        continueButton.addActionListener(e -> {
-            completionDialog.dispose();
-            if (completionListener != null) {
+        JLabel statsLabel = new JLabel(progressReport.replace("\n", " "));
+        statsLabel.setFont(new Font("Arial", Font.PLAIN, 15));
+        statsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton continueBtn = new JButton("Continue");
+        continueBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        continueBtn.setFocusPainted(false);
+        continueBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        continueBtn.addActionListener(e -> {
+            dialog.dispose();
+            if (completionListener != null)
                 completionListener.onMissionCompleted(levelNumber, phaseRecords);
-            }
             returnToMissionPanel();
         });
 
         panel.add(title);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(missionLabel);
+        panel.add(Box.createVerticalStrut(6));
         panel.add(timeLabel);
-        panel.add(new JLabel()); // Spacer
-        panel.add(continueButton);
+        panel.add(Box.createVerticalStrut(6));
+        panel.add(statsLabel);
+        panel.add(Box.createVerticalStrut(12));
+        panel.add(continueBtn);
 
-        completionDialog.setUndecorated(true);
-        completionDialog.setContentPane(panel);
-        completionDialog.pack();
-        completionDialog.setLocationRelativeTo(this);
-        completionDialog.setVisible(true);
+        dialog.setUndecorated(true);
+        dialog.setContentPane(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private void failMission() {
         gameTimer.stop();
         isGameOver = true;
 
-        // Complete current phase as failed
-        if (!phaseRecords.isEmpty()) {
-            PhaseData currentData = phaseRecords.get(phaseRecords.size() - 1);
-            currentData.complete(false);
-        }
+        DatabaseManager.updateHighestPhase(levelNumber, currentPhase);
 
-        // Show failure dialog
-        JDialog failDialog = new JDialog(
+        if (!phaseRecords.isEmpty())
+            phaseRecords.get(phaseRecords.size() - 1).complete(false);
+
+        int currentReached = currentPhase + 1;
+        int previousRecord = 0;
+
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:progress.db");
+             PreparedStatement pstmt = conn.prepareStatement(
+                     "SELECT highest_phase_reached FROM mission_progress WHERE mission = ?")) {
+
+            pstmt.setInt(1, levelNumber);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) previousRecord = rs.getInt("highest_phase_reached");
+        } catch (Exception ignored) {}
+
+        int improvement = currentReached - previousRecord;
+        String progressMsg = improvement > 0
+                ? "NEW RECORD! +" + improvement + " phase improvement!"
+                : "You got stuck at phase " + currentReached;
+
+        JDialog dialog = new JDialog(
                 (JFrame) SwingUtilities.getWindowAncestor(this),
-                "Mission Failed",
+                "Collision!",
                 true
         );
 
-        JPanel panel = new JPanel(new GridLayout(5, 1, 10, 10));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(new Color(189, 237, 255));
-        panel.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 30, 15, 30));
 
-        JLabel title = new JLabel("Collision! Try Again ", SwingConstants.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 24));
-        title.setForeground(Color.black);
+        JLabel title = new JLabel("COLLISION!");
+        title.setFont(new Font("Arial", Font.BOLD, 26));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel phaseInfo = new JLabel("Failed at Phase " + (currentPhase + 1) + "/" + TOTAL_PHASES, SwingConstants.CENTER);
-        phaseInfo.setFont(new Font("Arial", Font.PLAIN, 16));
-        phaseInfo.setForeground(Color.BLACK);
+        JLabel phaseLabel = new JLabel(
+                "Phase " + currentReached + " / " + TOTAL_PHASES
+        );
+        phaseLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        phaseLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JButton retryButton = new JButton("Retry Mission");
-        JButton exitButton = new JButton("Exit to Missions");
+        JLabel progressLabel = new JLabel(progressMsg);
+        progressLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        progressLabel.setForeground(improvement > 0 ? new Color(0, 120, 0) : Color.BLACK);
+        progressLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        retryButton.addActionListener(e -> {
-            failDialog.dispose();
+        JLabel motivation1 = new JLabel("Every attempt strengthens your eyes.");
+        JLabel motivation2 = new JLabel("Be patient, you'll soon see the difference.");
+        motivation1.setFont(new Font("Arial", Font.PLAIN, 14));
+        motivation2.setFont(new Font("Arial", Font.PLAIN, 14));
+        motivation1.setAlignmentX(Component.CENTER_ALIGNMENT);
+        motivation2.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton retryBtn = new JButton("Try Again");
+        JButton exitBtn = new JButton("Exit");
+
+        retryBtn.setFont(new Font("Arial", Font.BOLD, 15));
+        exitBtn.setFont(new Font("Arial", Font.BOLD, 15));
+
+        retryBtn.addActionListener(e -> {
+            dialog.dispose();
             restartMission();
         });
 
-        exitButton.addActionListener(e -> {
-            failDialog.dispose();
-            if (completionListener != null) {
+        exitBtn.addActionListener(e -> {
+            dialog.dispose();
+            if (completionListener != null)
                 completionListener.onMissionFailed(levelNumber, phaseRecords);
-            }
             returnToMissionPanel();
         });
 
-        panel.add(title);
-        panel.add(phaseInfo);
-        panel.add(new JLabel()); // Spacer
-        panel.add(retryButton);
-        panel.add(exitButton);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setOpaque(false);
+        buttonPanel.add(retryBtn);
+        buttonPanel.add(exitBtn);
 
-        failDialog.setUndecorated(true);
-        failDialog.setContentPane(panel);
-        failDialog.pack();
-        failDialog.setLocationRelativeTo(this);
-        failDialog.setVisible(true);
+        panel.add(title);
+        panel.add(Box.createVerticalStrut(6));
+        panel.add(phaseLabel);
+        panel.add(Box.createVerticalStrut(4));
+        panel.add(progressLabel);
+        panel.add(Box.createVerticalStrut(6));
+        panel.add(motivation1);
+        panel.add(motivation2);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(buttonPanel);
+
+        dialog.setUndecorated(true);
+        dialog.setContentPane(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
+
 
     private void restartMission() {
         enemyFishes.clear();
@@ -299,6 +345,8 @@ public class Game extends BasePanel {
         isGameOver = false;
         currentPhase = 0;
         phaseRecords.clear();
+        DatabaseManager.incrementAttempt(levelNumber);
+
         gameTimer.start();
         startPhase(0);
         requestFocusInWindow();
@@ -382,8 +430,8 @@ public class Game extends BasePanel {
         player.update();
 
         // Check collision with enemy fish
-        int paddingX = 22;
-        int paddingY = 6;
+        int paddingX = -3;
+        int paddingY = -2;
 
         Rectangle playerBounds = new Rectangle(
                 player.getX() + paddingX,
@@ -444,6 +492,35 @@ public class Game extends BasePanel {
 
         // Draw player (on top)
         player.draw(g);
+    }
+    private JDialog createStyledDialog(String titleText, Color backgroundColor) {
+        JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), titleText, true);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(backgroundColor);
+        panel.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50)); // Daha küçük padding
+        dialog.setUndecorated(true);
+        dialog.setContentPane(panel);
+        return dialog;
+    }
+
+    private JButton createStyledButton(String text, Color bgColor) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Arial", Font.BOLD, 18));
+        btn.setBackground(bgColor);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(300, 50)); // Butonları sınırlı genişlikte tut
+        return btn;
+    }
+
+    private JLabel createCenteredLabel(String text, int fontSize, Color color) {
+        JLabel label = new JLabel("<html><div style='text-align: center;'>" + text + "</div></html>");
+        label.setFont(new Font("Arial", fontSize == 0 ? Font.PLAIN : Font.BOLD, fontSize == 0 ? 18 : fontSize));
+        label.setForeground(color);
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return label;
     }
 }
 
@@ -741,8 +818,8 @@ class EnemyFish {
     double vx, vy;
     double phase;
 
-    private int width = 100;
-    private int height = 40;
+    private int width = 80;
+    private int height = 32;
 
     private Image fishImage;
     private boolean facingRight;
@@ -789,16 +866,25 @@ class EnemyFish {
                 RenderingHints.VALUE_ANTIALIAS_ON
         );
 
-        if (fishImage != null) {
-            if (facingRight) {
-                g2d.drawImage(fishImage, (int) x, (int) y, width, height, null);
-            } else {
-                g2d.drawImage(fishImage, (int) x + width, (int) y, -width, height, null);
-            }
+        g2d.setColor(FishColorConfig.getEnemyColor());
+
+        if (facingRight) {
+            // Body
+            g2d.fillOval((int) x, (int) y, width - 10, height);
+
+            // Tail
+            int[] tailX = {(int) x, (int) x - 15, (int) x};
+            int[] tailY = {(int) y + 5, (int) y + height / 2, (int) y + height - 5};
+            g2d.fillPolygon(tailX, tailY, 3);
         } else {
-            drawSimpleFish(g2d);
+            g2d.fillOval((int) x + 10, (int) y, width - 10, height);
+
+            int[] tailX = {(int) x + width, (int) x + width + 15, (int) x + width};
+            int[] tailY = {(int) y + 5, (int) y + height / 2, (int) y + height - 5};
+            g2d.fillPolygon(tailX, tailY, 3);
         }
     }
+
 
     private void drawSimpleFish(Graphics2D g2d) {
         g2d.setColor(new Color(100, 180, 255));
@@ -836,8 +922,8 @@ class Player {
     private double speed = 5.0;
     private double acceleration = 0.5;
     private double friction = 0.92;
-    private int width = 100;
-    private int height = 40;
+    private int width = 80;
+    private int height = 32;
     private boolean facingRight = true;
 
     private boolean upPressed = false;
@@ -929,26 +1015,15 @@ class Player {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        if (fishImage != null) {
-            if (!facingRight) {
-                g2d.drawImage(fishImage, (int)x, (int)y, width, height, null);
-            } else {
-                g2d.drawImage(fishImage, (int)x + width, (int)y, -width, height, null);
-            }
-        } else {
-            drawSimpleFish(g2d);
-        }
-    }
+        g2d.setColor(FishColorConfig.getPlayerColor());
 
-    private void drawSimpleFish(Graphics2D g2d) {
-        // Body (oval)
-        g2d.setColor(new Color(255, 140, 0)); // Orange
         if (facingRight) {
             g2d.fillOval((int) x, (int) y, width - 10, height);
-            // Tail
+
             int[] tailX = {(int) x, (int) x - 15, (int) x};
             int[] tailY = {(int) y + 10, (int) y + height / 2, (int) y + height - 10};
             g2d.fillPolygon(tailX, tailY, 3);
+
             // Eye
             g2d.setColor(Color.WHITE);
             g2d.fillOval((int) x + width - 25, (int) y + 10, 8, 8);
@@ -956,17 +1031,18 @@ class Player {
             g2d.fillOval((int) x + width - 23, (int) y + 12, 4, 4);
         } else {
             g2d.fillOval((int) x + 10, (int) y, width - 10, height);
-            // Tail
+
             int[] tailX = {(int) x + width, (int) x + width + 15, (int) x + width};
             int[] tailY = {(int) y + 10, (int) y + height / 2, (int) y + height - 10};
             g2d.fillPolygon(tailX, tailY, 3);
-            // Eye
+
             g2d.setColor(Color.WHITE);
             g2d.fillOval((int) x + 15, (int) y + 10, 8, 8);
             g2d.setColor(Color.BLACK);
             g2d.fillOval((int) x + 17, (int) y + 12, 4, 4);
         }
     }
+
 
     public int getX() {
         return (int) x;
@@ -988,39 +1064,3 @@ class Player {
         loadFishImage(); // Reruns the logic to check LazyEyeConfig again
     }
 }
-
-/*
-import java.io.FileWriter;
-import java.io.IOException;
-
-public class ProgressLogger {
-
-    private static final String FILE_NAME = "progress.txt";
-
-    public static void save(
-            int mission,
-            int phase,
-            int density,
-            double speed,
-            long time,
-            boolean success
-    ) {
-        try (FileWriter writer = new FileWriter(FILE_NAME, true)) {
-
-            String line =
-                    "mission=" + mission + ";" +
-                    "phase=" + phase + ";" +
-                    "density=" + density + ";" +
-                    "speed=" + speed + ";" +
-                    "time=" + time + ";" +
-                    "success=" + success;
-
-            writer.write(line + "\n");
-
-        } catch (IOException e) {
-            System.out.println("Progress save error!");
-        }
-    }
-}
-
- */

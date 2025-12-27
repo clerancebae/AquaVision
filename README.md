@@ -14,8 +14,8 @@ This project presents a Serious Game designed to support the clinical treatment 
 
 Core Therapeutic Approach
 
-- Amblyopic Eye: Assigned primary task (player control fish)
-- Dominant Eye: Processes environmental obstacles (enemy fish)
+- Amblyopic Eye: Assigned primary task (enemy fish)
+- Dominant Eye: Processes environmental obstacles (player control fish)
 - Therapeutic Goal: Force binocular fusion for successful gameplay
 
 The application employs a high-contrast black background to minimize visual noise and isolate targeted photoreceptor stimulation, ensuring maximum therapeutic efficacy.

@@ -126,7 +126,7 @@ Technology Stack
 | JDBC Driver | sqlite-jdbc | Latest |
 
 Application Structure
-
+<pre>
 src/
 ├── Main.java                        # Application entry point with icon & sound initialization
 ├── ui/
@@ -199,7 +199,7 @@ Main.java
                       │    └── Click Enemy Box → Live Color Dialog
                       ├── Preview Panel (with FishRenderer)
                       └── Close Button → Dispose dialog
-
+</pre>
 ---
 
 🧩 Core Systems
@@ -427,7 +427,7 @@ Prerequisites
 Installation Steps
 
 1. Clone the Repository
-   git clone https://github.com/YourUsername/Amblyopia-Therapy-Game.git
+   git clone https://github.com/clerancebae/AquaVisionx.git
    cd Amblyopia-Therapy-Game
 
 2. Set Up Dependencies
@@ -674,7 +674,7 @@ This software is provided "as-is" without any warranty of effectiveness.
 
 MIT License
 
-Copyright (c) 2025 [Your Name]
+Copyright (c) 2025 clerancbae
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -704,10 +704,6 @@ non-commercial purposes with proper attribution.
 - Contemporary dichoptic therapy research literature (Li et al., Hess et al.)
 - Java Swing and Java2D community resources
 - SQLite and xerial/sqlite-jdbc open-source contributors
-- Academic advisors and clinical collaborators
-- Vision science community feedback
-- Turkish ophthalmology research institutions
-- TÜBİTAK (The Scientific and Technological Research Council of Turkey)
 
 Special Thanks:
 - Beta testers and early adopters
@@ -718,11 +714,9 @@ Special Thanks:
 
 📞 Contact & Support
 
-- GitHub Issues: https://github.com/YourUsername/Amblyopia-Therapy-Game/issues
-- Discussions: https://github.com/YourUsername/Amblyopia-Therapy-Game/discussions
-- Email: your.email@university.edu
-- Academic Institution: [Your University Name]
-- Research Lab: [Lab Name, if applicable]
+- GitHub Issues: https://github.com/clerance/AquaVision/issues
+- Discussions: https://github.com/clerancebae/AquaVision/discussions
+- Email: kilic-berke@hotmail.com
 
 For Clinical Inquiries:
 Please consult with your ophthalmologist or vision therapist regarding 
@@ -737,7 +731,7 @@ Open an issue on GitHub with:
 
 ---
 
-🌟 Citation
+/*🌟 Citation
 
 If you use this software in your research, please cite:
 
@@ -754,8 +748,8 @@ BibTeX Format:
 APA Format:
 Your Name. (2025). Dichoptic Amblyopia Therapy Game: A Serious Game for 
 Binocular Vision Rehabilitation [Computer software]. 
-https://github.com/YourUsername/Amblyopia-Therapy-Game
-
+https://github.com/clerancebae/AquaVision
+*/
 ---
 
 📈 Version History
@@ -793,9 +787,9 @@ Recommended Practices:
 
 Made with ❤️ for vision science and therapeutic gaming
 
-⭐ Star this repo: https://github.com/clerancebae/Amblyopia-Therapy-Game
-🐛 Report Bug: https://github.com/clerancebae/Amblyopia-Therapy-Game/issues
-💡 Request Feature: https://github.com/clerancebae/Amblyopia-Therapy-Game/issues
-📖 Wiki: https://github.com/clerancebae/palik/wiki
+⭐ Star this repo: https://github.com/clerancebae/AquaVision
+🐛 Report Bug: https://github.com/clerancebae/AquaVision/issues
+💡 Request Feature: https://github.com/clerancebae/AquaVision/issues
+📖 Wiki: https://github.com/clerancebae/AquaVision/wiki
 
 ---

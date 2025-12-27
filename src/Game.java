@@ -814,15 +814,11 @@ class SpawnInstruction {
 
 // Enemy Fish class
 class EnemyFish {
-    double x, y;
-    double vx, vy;
-    double phase;
-
-    private int width = 80;
-    private int height = 32;
-
-    private Image fishImage;
+    double x, y, vx, vy, phase;
+    private int width = 100;
+    private int height = 40;
     private boolean facingRight;
+
 
     EnemyFish(double x, double y, double vx, double vy) {
         this.x = x;
@@ -830,25 +826,10 @@ class EnemyFish {
         this.vx = vx;
         this.vy = vy;
         this.phase = Math.random() * Math.PI * 2;
-        this.facingRight = vx < 0;
+        this.facingRight = vx > 0;
 
-        loadFishImage();
     }
 
-    private void loadFishImage() {
-        try {
-            String imagePath = LazyEyeConfig.getEnemyImagePath();
-            ImageIcon icon = new ImageIcon(imagePath);
-            if (icon.getImage() != null && icon.getIconWidth() > 0) {
-                fishImage = icon.getImage()
-                        .getScaledInstance(width, height, Image.SCALE_SMOOTH);
-            } else {
-                fishImage = null;
-            }
-        } catch (Exception e) {
-            fishImage = null;
-        }
-    }
 
     void update() {
         x += vx;
@@ -861,57 +842,18 @@ class EnemyFish {
 
     void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON
-        );
 
-        g2d.setColor(FishColorConfig.getEnemyColor());
+        Color enemyColor = LazyEyeConfig.getEnemyColor();
 
-        if (facingRight) {
-            // Body
-            g2d.fillOval((int) x, (int) y, width - 10, height);
-
-            // Tail
-            int[] tailX = {(int) x, (int) x - 15, (int) x};
-            int[] tailY = {(int) y + 5, (int) y + height / 2, (int) y + height - 5};
-            g2d.fillPolygon(tailX, tailY, 3);
-        } else {
-            g2d.fillOval((int) x + 10, (int) y, width - 10, height);
-
-            int[] tailX = {(int) x + width, (int) x + width + 15, (int) x + width};
-            int[] tailY = {(int) y + 5, (int) y + height / 2, (int) y + height - 5};
-            g2d.fillPolygon(tailX, tailY, 3);
-        }
+        FishRenderer.drawFish(g2d, (int)x, (int)y, width, height, enemyColor, facingRight);
     }
 
-
-    private void drawSimpleFish(Graphics2D g2d) {
-        g2d.setColor(new Color(100, 180, 255));
-
-        if (facingRight) {
-            g2d.fillOval((int) x, (int) y, width - 10, height);
-            int[] tailX = {(int) x, (int) x - 15, (int) x};
-            int[] tailY = {(int) y + 5, (int) y + height / 2, (int) y + height - 5};
-            g2d.fillPolygon(tailX, tailY, 3);
-        } else {
-            g2d.fillOval((int) x + 10, (int) y, width - 10, height);
-            int[] tailX = {(int) x + width, (int) x + width + 15, (int) x + width};
-            int[] tailY = {(int) y + 5, (int) y + height / 2, (int) y + height - 5};
-            g2d.fillPolygon(tailX, tailY, 3);
-        }
-    }
-
-    // 🔍 Collision / ölçüm için
-    public int getX() { return (int) x; }
-    public int getY() { return (int) y; }
+    // Çarpışma / ölçüm getter'ları
     public int getWidth() { return width; }
     public int getHeight() { return height; }
-    // Add this inside the EnemyFish class
-    public void reloadSkin() {
-        loadFishImage(); // Reruns the logic to check LazyEyeConfig again
-    }
 }
+
+
 
 
 // Player class
@@ -922,8 +864,8 @@ class Player {
     private double speed = 5.0;
     private double acceleration = 0.5;
     private double friction = 0.92;
-    private int width = 80;
-    private int height = 32;
+    private int width = 100;
+    private int height = 40;
     private boolean facingRight = true;
 
     private boolean upPressed = false;
@@ -931,27 +873,12 @@ class Player {
     private boolean leftPressed = false;
     private boolean rightPressed = false;
 
-    private Image fishImage;
 
     public Player(int startX, int startY) {
         this.x = startX;
         this.y = startY;
-        loadFishImage();
     }
 
-    private void loadFishImage() {
-        try {
-            String imagePath = LazyEyeConfig.getPlayerImagePath();
-            ImageIcon icon = new ImageIcon(imagePath);
-            if (icon.getImage() != null && icon.getIconWidth() > 0) {
-                fishImage = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-            } else {
-                fishImage = null;
-            }
-        } catch (Exception e) {
-            fishImage = null;
-        }
-    }
 
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
@@ -993,74 +920,24 @@ class Player {
         x += velocityX;
         y += velocityY;
 
-        if (x < 0) {
-            x = 0;
-            velocityX = 0;
-        }
-        if (x > 600 - width) {
-            x = 600 - width;
-            velocityX = 0;
-        }
-        if (y < 0) {
-            y = 0;
-            velocityY = 0;
-        }
-        if (y > 600 - height) {
-            y = 600 - height;
-            velocityY = 0;
-        }
+        // Ekran sınırları kontrolü
+        if (x < 0) { x = 0; velocityX = 0; }
+        if (x > 600 - width) { x = 600 - width; velocityX = 0; }
+        if (y < 0) { y = 0; velocityY = 0; }
+        if (y > 600 - height) { y = 600 - height; velocityY = 0; }
     }
 
     public void draw(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2d.setColor(FishColorConfig.getPlayerColor());
+        Color playerColor = LazyEyeConfig.getPlayerColor();
 
-        if (facingRight) {
-            g2d.fillOval((int) x, (int) y, width - 10, height);
-
-            int[] tailX = {(int) x, (int) x - 15, (int) x};
-            int[] tailY = {(int) y + 10, (int) y + height / 2, (int) y + height - 10};
-            g2d.fillPolygon(tailX, tailY, 3);
-
-            // Eye
-            g2d.setColor(Color.WHITE);
-            g2d.fillOval((int) x + width - 25, (int) y + 10, 8, 8);
-            g2d.setColor(Color.BLACK);
-            g2d.fillOval((int) x + width - 23, (int) y + 12, 4, 4);
-        } else {
-            g2d.fillOval((int) x + 10, (int) y, width - 10, height);
-
-            int[] tailX = {(int) x + width, (int) x + width + 15, (int) x + width};
-            int[] tailY = {(int) y + 10, (int) y + height / 2, (int) y + height - 10};
-            g2d.fillPolygon(tailX, tailY, 3);
-
-            g2d.setColor(Color.WHITE);
-            g2d.fillOval((int) x + 15, (int) y + 10, 8, 8);
-            g2d.setColor(Color.BLACK);
-            g2d.fillOval((int) x + 17, (int) y + 12, 4, 4);
-        }
+        FishRenderer.drawFish(g2d, (int)x, (int)y, width, height, playerColor, facingRight);
     }
 
 
-    public int getX() {
-        return (int) x;
-    }
-
-    public int getY() {
-        return (int) y;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-    // Add this inside the Player class
-    public void reloadSkin() {
-        loadFishImage(); // Reruns the logic to check LazyEyeConfig again
-    }
+    public int getX() { return (int) x; }
+    public int getY() { return (int) y; }
+    public int getWidth() { return width; }
+    public int getHeight() { return height; }
 }

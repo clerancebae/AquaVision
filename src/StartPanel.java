@@ -43,7 +43,7 @@ public class StartPanel extends BasePanel {
                     "",
                     true
             );
-            dialog.setSize(350, 350);
+            dialog.setSize(375, 500);
             dialog.setUndecorated(true);
             dialog.setLocationRelativeTo(null);
             dialog.setContentPane(new SettingPanel());

@@ -41,7 +41,6 @@ public class Game extends BasePanel {
         super();
         this.levelNumber = levelNumber;
 
-        DatabaseManager.initialize();
         DatabaseManager.incrementAttempt(levelNumber);
 
         setLayout(null);

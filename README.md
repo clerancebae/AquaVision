@@ -680,45 +680,51 @@ Solution: Check database write permissions. Verify user_settings table exists.
 Extension Points:
 
 Custom Pattern Plugin Interface:
+<pre>
 public interface TherapyPattern {
     Path2D generate(double time, DifficultyLevel level);
     String getTherapeuticGoal();
     int getRecommendedPhase();
 }
-
+</pre>
 // Example implementation:
+<pre>
 public class SpiralPattern implements TherapyPattern {
     @Override
     public Path2D generate(double time, DifficultyLevel level) {
         // Generate spiral trajectory
     }
 }
+</pre>
 
 Custom Data Exporter:
+<pre>
 public interface DataExporter {
     void export(List<PhaseData> phases, String format);
     boolean supportsFormat(String format);
 }
-
+</pre>
 // Usage:
 DataExporter csvExporter = new CSVExporter();
 csvExporter.export(phaseRecords, "csv");
 
 Custom Fish Renderer:
+<pre>
 public interface FishDrawable {
     void draw(Graphics2D g2d, int x, int y, int width, int height, 
               Color color, boolean facingRight);
 }
-
+</pre>
 // Allows different visual styles (realistic, cartoon, abstract)
 
 Database Migration System:
+<pre>
 public class DatabaseMigration {
     public static void migrateV1toV2() {
         // Add new columns, preserve existing data
     }
 }
-
+</pre>
 </details>
 
 ---

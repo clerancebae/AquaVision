@@ -13,7 +13,7 @@ public class StartPanel extends BasePanel {
         setLayout(null);
 
         // Background
-        ImageIcon backgroundImg = new ImageIcon("background2.png");
+        ImageIcon backgroundImg = new ImageIcon("resources/background.png");
         Image img = backgroundImg.getImage();
         scaledBackground = img.getScaledInstance(600, 600, Image.SCALE_SMOOTH);
 

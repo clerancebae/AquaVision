@@ -3,8 +3,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -423,7 +421,6 @@ public class Game extends BasePanel {
 
         // Update phase timer
         long elapsed = System.currentTimeMillis() - phaseStartTime;
-//        phaseTimerLabel.setText(String.format("%.1fs", elapsed / 1000.0));
 
         // Update player
         player.update();

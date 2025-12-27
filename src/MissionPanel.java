@@ -40,10 +40,10 @@ public class MissionPanel extends BasePanel {
         System.out.println("--- Loading Images ---");
 
         // Background
-        backgroundImage = safeLoadImage("MissionBackground.png");
+        backgroundImage = safeLoadImage("resources/MissionBackground.png");
 
         // Active icon
-        Image imgActive = safeLoadImage("level_active.png");
+        Image imgActive = safeLoadImage("resources/level_active.png");
         if (imgActive != null) {
             Image scaled = imgActive.getScaledInstance(BUTTON_SIZE, BUTTON_SIZE, Image.SCALE_SMOOTH);
             shellIcon = new ImageIcon(scaled);
@@ -54,7 +54,7 @@ public class MissionPanel extends BasePanel {
         }
 
         // Locked icon
-        Image imgLocked = safeLoadImage("level_locked.png");
+        Image imgLocked = safeLoadImage("resources/level_locked.png");
         if (imgLocked != null) {
             Image scaled = imgLocked.getScaledInstance(BUTTON_SIZE, BUTTON_SIZE, Image.SCALE_SMOOTH);
             lockedIcon = new ImageIcon(scaled);
@@ -71,7 +71,7 @@ public class MissionPanel extends BasePanel {
 
     private Image safeLoadImage(String fileName) {
         try {
-            URL url = getClass().getResource("/" + fileName);
+            URL url = getClass().getResource("resources/" + fileName);
             if (url != null) {
                 return new ImageIcon(url).getImage();
             }
@@ -94,7 +94,7 @@ public class MissionPanel extends BasePanel {
         JButton returnButton = new JButton();
         returnButton.setBounds(10, 10, 50, 50);
 
-        Image img = safeLoadImage("return.png");
+        Image img = safeLoadImage("resources/return.png");
         if (img != null) {
             Image scaled = img.getScaledInstance(100, 50, Image.SCALE_SMOOTH);
             returnButton.setIcon(new ImageIcon(scaled));

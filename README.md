@@ -174,7 +174,7 @@ Therapeutic Session Guidelines
 <summary><b>📂 Application Structure</b></summary>
 
 <br>
-
+<pre>
 src/
 ├── Main.java                        # Application entry point with icon & sound initialization
 ├── ui/
@@ -252,7 +252,7 @@ Main.java
                       │    └── Click Enemy Box → Live Color Dialog
                       ├── Preview Panel (with FishRenderer)
                       └── Close Button → Dispose dialog
-
+</pre>
 </details>
 
 ---
@@ -273,6 +273,7 @@ Key Features:
 - Integrates with DatabaseManager for persistent settings
 
 Implementation:
+<pre>
 private static boolean isRightEyeSelected = false;
 private static Color basePlayerColor = new Color(0, 100, 255);  // Cyan
 private static Color baseEnemyColor = new Color(200, 0, 0);     // Red
@@ -284,7 +285,7 @@ public static Color getPlayerColor() {
 public static Color getEnemyColor() {
     return isRightEyeSelected ? basePlayerColor : baseEnemyColor;
 }
-
+</pre>
 </details>
 
 <details>
@@ -322,7 +323,7 @@ pattern.addSpawn(600, 650, 650, -baseSpeed, -baseSpeed * 0.8, 30);
 Purpose: Clinical data persistence and progress tracking
 
 Database Schema:
-
+<pre>
 CREATE TABLE mission_progress (
     mission INTEGER PRIMARY KEY,
     total_attempts INTEGER DEFAULT 0,
@@ -338,7 +339,7 @@ CREATE TABLE user_settings (
     enemy_color INTEGER NOT NULL,
     last_updated TEXT DEFAULT CURRENT_TIMESTAMP
 );
-
+</pre>
 Key Methods:
 - incrementAttempt(mission): Records new attempt
 - updateHighestPhase(mission, phase): Updates progress
@@ -365,6 +366,7 @@ Rendering Features:
 - Color channel filtering per entity type
 
 Fish Anatomy Rendering:
+<pre>
 public static void drawFish(Graphics2D g2d, int x, int y, int width, int height, 
                            Color color, boolean facingRight) {
     // Tail: Quadratic bezier curve
@@ -372,7 +374,7 @@ public static void drawFish(Graphics2D g2d, int x, int y, int width, int height,
     // Bottom Fin: Quadratic bezier curve  
     // Body: Filled oval
 }
-
+</pre>
 </details>
 
 <details>
@@ -390,6 +392,7 @@ Phase Progression Logic:
 - 15 phases per mission = complete therapeutic session
 
 Phase Data Tracking:
+<pre>
 class PhaseData {
     int missionNumber;
     int phaseNumber;
@@ -398,7 +401,7 @@ class PhaseData {
     long survivedDuration;
     boolean completed;
 }
-
+</pre>
 </details>
 
 <details>
@@ -542,9 +545,10 @@ Phase 14: FINAL BOSS
 <br>
 
 1. Clone the Repository
+<pre>
    git clone https://github.com/clerancebae/AquaVisionx.git
    cd AquaVisionx
-
+</pre>
 2. Set Up Dependencies
    
    Option A: Manual Classpath

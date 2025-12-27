@@ -32,6 +32,8 @@ void main() throws UnsupportedAudioFileException, IOException, LineUnavailableEx
         }
     }
     SoundManager.init();
+    DatabaseManager.initialize();
+    DatabaseManager.loadUserSettings();
 
 
     StartPanel panel = new StartPanel();

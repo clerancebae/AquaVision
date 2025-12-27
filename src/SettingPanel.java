@@ -1,5 +1,4 @@
 import javax.swing.*;
-import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
@@ -71,6 +70,13 @@ public class SettingPanel extends BasePanel {
         if (LazyEyeConfig.isRightEyeSelected()) rbRight.setSelected(true); else rbLeft.setSelected(true);
         ActionListener eyeListener = e -> {
             LazyEyeConfig.setRightEye(rbRight.isSelected());
+
+            DatabaseManager.saveUserSettings(
+                    LazyEyeConfig.isRightEyeSelected(),
+                    LazyEyeConfig.getPlayerColor(),
+                    LazyEyeConfig.getEnemyColor()
+            );
+
             updateColorBoxes();
             mainPreviewPanel.repaint();
         };
@@ -162,8 +168,16 @@ public class SettingPanel extends BasePanel {
         okButton.addActionListener(e -> {
             updateColorBoxes();
             mainPreviewPanel.repaint();
+
+            DatabaseManager.saveUserSettings(
+                    LazyEyeConfig.isRightEyeSelected(),
+                    LazyEyeConfig.getPlayerColor(),
+                    LazyEyeConfig.getEnemyColor()
+            );
+
             liveDialog.dispose();
         });
+
         buttonPanel.add(okButton);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, colorChooser, bigLivePreview);

@@ -210,14 +210,14 @@ resources/
 ├── return.png                      # Return button icon
 ├── close.png                       # Close button icon
 └── Child_Game_Bg_Music.wav         # Background music file
-
+</pre>
 </details>
 
 <details>
 <summary><b>🔄 Panel Hierarchy & Navigation Flow</b></summary>
 
 <br>
-
+<pre>
 Main.java
   └── Creates JFrame (600x600, undecorated)
        │
@@ -305,6 +305,7 @@ Pattern Design Philosophy:
 - Phase 14: Final boss with combined challenges
 
 Difficulty Scaling:
+<pre>
 double baseSpeed = 1.2 + (mission * 0.3);
 double complexityFactor = 1.0 + (mission - 1) * 0.15;
 int extraFish = Math.max(0, (mission - 1));
@@ -312,7 +313,7 @@ int extraFish = Math.max(0, (mission - 1));
 Example Pattern (Phase 3 - Diagonal Pursuit):
 pattern.addSpawn(0, -50, -50, baseSpeed, baseSpeed * 0.8, 30);
 pattern.addSpawn(600, 650, 650, -baseSpeed, -baseSpeed * 0.8, 30);
-
+</pre>
 </details>
 
 <details>

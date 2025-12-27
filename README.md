@@ -29,19 +29,19 @@ The application employs a high-contrast black background to minimize visual nois
 
 <br>
 
-![Main Menu](docs/screenshots/main-Menu.png)
+![Main Menu](docs/screenshots/main-Menu.png) <br>
 *Main menu with gradient rounded buttons and ocean-themed background*
 
-![Mission Selection](docs/screenshots/mission-selection.png)
+![Mission Selection](docs/screenshots/mission-selection.png) <br>
 *Mission selection screen with level unlocking system and shell icons*
 
-![Gameplay](docs/screenshots/gameplay.png)
+![Gameplay](docs/screenshots/gameplay.png) <br>
 *Dichoptic fish rendering with real-time phase progression tracking*
 
-![Settings Panel](docs/screenshots/settings.png)
+![Settings Panel](docs/screenshots/settings.png) <br>
 *Configuration interface with live color calibration preview*
 
-![Color Calibration](docs/screenshots/color-calibration.png)
+![Color Calibration](docs/screenshots/color-calibration.png) <br>
 *Real-time dichoptic color adjustment with live fish preview*
 
 </details>

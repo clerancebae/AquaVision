@@ -13,7 +13,7 @@ public class SoundManager {
         try {
             AudioInputStream audio =
                     AudioSystem.getAudioInputStream(
-                            new File("Child_Game_Bg_Music.wav"));
+                            new File("resources/Child_Game_Bg_Music.wav"));
 
             music = AudioSystem.getClip();
             music.open(audio);

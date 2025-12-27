@@ -18,7 +18,7 @@ public class SettingPanel extends BasePanel {
         setSize(400, 550);
 
         // --- Kapatma Butonu ---
-        ImageIcon icon = new ImageIcon("close.png");
+        ImageIcon icon = new ImageIcon("resources/close.png");
         Image scaled = (icon.getImage() != null) ? icon.getImage().getScaledInstance(60, 40, Image.SCALE_SMOOTH) : null;
         JButton closeBtn = new JButton((scaled != null) ? new ImageIcon(scaled) : null);
         if (scaled == null) closeBtn.setText("X");
@@ -44,7 +44,7 @@ public class SettingPanel extends BasePanel {
         JSlider slider = new JSlider(0, 100, 50);
         slider.setBounds(30, 85, 300, 40);
         slider.setPaintTicks(false); slider.setPaintLabels(false);
-        ImageIcon sliderIcon = new ImageIcon("level_active.png");
+        ImageIcon sliderIcon = new ImageIcon("resources/level_active.png");
         slider.setUI(new SeaSliderUI(slider, (sliderIcon.getImage() != null) ? sliderIcon.getImage() : null));
         slider.setOpaque(false); slider.setBackground(new Color(189, 237, 255));
         slider.addChangeListener(e -> {

@@ -8,7 +8,7 @@ import javax.sound.sampled.*;
 void main() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
     JFrame frame = new JFrame();
     frame.setSize(600, 600);
-    URL url = getClass().getResource("/appLogo.png");
+    URL url = getClass().getResource("resources/appLogo.png");
 
     if (url == null) {
         System.out.println("Error: Image not found!");

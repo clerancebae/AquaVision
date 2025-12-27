@@ -2,45 +2,42 @@ import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
 import java.awt.Taskbar;
-import javax.sound.sampled.*;
 
+public class Main {
 
-void main() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
-    JFrame frame = new JFrame();
-    frame.setSize(600, 600);
-    URL url = getClass().getResource("resources/appLogo.png");
+    public static void main(String[] args) {
 
-    if (url == null) {
-        System.out.println("Error: Image not found!");
-    } else {
-        System.out.println("Success: Found image at " + url);
-        Image image = Toolkit.getDefaultToolkit().getImage(url);
+        JFrame frame = new JFrame();
+        frame.setSize(600, 600);
 
-        // 2. This sets the icon for the Window (and Cmd+Tab switcher)
-        frame.setIconImage(image);
+        URL url = Main.class.getResource("/appLogo.png");
 
-        // 3. THIS is the specific code to change the Mac Dock Icon
-        try {
-            // Check if the system supports changing the Taskbar/Dock icon
-            if (Taskbar.isTaskbarSupported()) {
-                Taskbar.getTaskbar().setIconImage(image);
+        if (url == null) {
+            System.out.println("Error: Image not found! Check path and Resources Root.");
+        } else {
+            System.out.println("Success: Found image at " + url);
+            Image image = Toolkit.getDefaultToolkit().getImage(url);
+
+            frame.setIconImage(image);
+
+            // macOS Dock icon
+            try {
+                if (Taskbar.isTaskbarSupported()) {
+                    Taskbar.getTaskbar().setIconImage(image);
+                }
+            } catch (Exception e) {
+                System.out.println("Could not set dock/taskbar icon: " + e.getMessage());
             }
-        } catch (UnsupportedOperationException e) {
-            System.out.println("The os does not support: 'taskbar.setIconImage'");
-        } catch (SecurityException e) {
-            System.out.println("There was a security exception for: 'taskbar.setIconImage'");
         }
+
+        SoundManager.init();
+        DatabaseManager.initialize();
+        DatabaseManager.loadUserSettings();
+
+        StartPanel panel = new StartPanel();
+        frame.add(panel);
+        frame.setUndecorated(true);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
-    SoundManager.init();
-    DatabaseManager.initialize();
-    DatabaseManager.loadUserSettings();
-
-
-    StartPanel panel = new StartPanel();
-    frame.add(panel);
-    frame.setUndecorated(true);
-    frame.setLocationRelativeTo(null);
-    frame.setVisible(true);
-
-
 }

@@ -29,7 +29,7 @@ The application employs a high-contrast black background to minimize visual nois
 
 <br>
 
-![Main Menu](docs/screenshots/main-menu.png)
+![Main Menu](docs/screenshots/main-Menu.png)
 *Main menu with gradient rounded buttons and ocean-themed background*
 
 ![Mission Selection](docs/screenshots/mission-selection.png)

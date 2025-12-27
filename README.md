@@ -22,7 +22,38 @@ The application employs a high-contrast black background to minimize visual nois
 
 ---
 
+🎨 Game Screenshots
+
+<details>
+<summary><b>📸 Click to view game screenshots</b></summary>
+
+<br>
+
+![Main Menu](docs/screenshots/main-menu.png)
+*Main menu with gradient rounded buttons and ocean-themed background*
+
+![Mission Selection](docs/screenshots/mission-selection.png)
+*Mission selection screen with level unlocking system and shell icons*
+
+![Gameplay](docs/screenshots/gameplay.png)
+*Dichoptic fish rendering with real-time phase progression tracking*
+
+![Settings Panel](docs/screenshots/settings.png)
+*Configuration interface with live color calibration preview*
+
+![Color Calibration](docs/screenshots/color-calibration.png)
+*Real-time dichoptic color adjustment with live fish preview*
+
+</details>
+
+---
+
 🧠 Clinical & Scientific Rationale
+
+<details>
+<summary><b>📚 Click to expand scientific background</b></summary>
+
+<br>
 
 Background
 
@@ -47,6 +78,8 @@ This application implements dichoptic principles through:
 2. Task Relevance: Increasing visual processing demands on the amblyopic eye
 3. Binocular Cooperation: Enforcing integration of both visual streams for task success
 4. Cognitive Load Management: Minimalist design maintains focus on visual processing
+
+</details>
 
 ---
 
@@ -90,6 +123,11 @@ This application implements dichoptic principles through:
 
 🎮 Game Mechanics
 
+<details>
+<summary><b>🕹️ Click to view game mechanics</b></summary>
+
+<br>
+
 Concept
 Navigate a bioluminescent fish through a dark aquatic environment while avoiding predators. Success requires functional binocular vision—each eye contributes essential information.
 
@@ -111,11 +149,16 @@ Therapeutic Session Guidelines
 - Environment: Low ambient light, minimal distractions
 - Posture: Comfortable viewing distance (40-60cm from screen)
 
+</details>
+
 ---
 
 🛠 Technical Architecture
 
-Technology Stack
+<details>
+<summary><b>⚙️ Technology Stack</b></summary>
+
+<br>
 
 | Component | Technology | Version |
 |-----------|-----------|---------|
@@ -125,8 +168,13 @@ Technology Stack
 | Database | SQLite | 3.40+ |
 | JDBC Driver | sqlite-jdbc | Latest |
 
-Application Structure
-<pre>
+</details>
+
+<details>
+<summary><b>📂 Application Structure</b></summary>
+
+<br>
+
 src/
 ├── Main.java                        # Application entry point with icon & sound initialization
 ├── ui/
@@ -163,7 +211,12 @@ resources/
 ├── close.png                       # Close button icon
 └── Child_Game_Bg_Music.wav         # Background music file
 
-Panel Hierarchy & Navigation Flow
+</details>
+
+<details>
+<summary><b>🔄 Panel Hierarchy & Navigation Flow</b></summary>
+
+<br>
 
 Main.java
   └── Creates JFrame (600x600, undecorated)
@@ -199,12 +252,18 @@ Main.java
                       │    └── Click Enemy Box → Live Color Dialog
                       ├── Preview Panel (with FishRenderer)
                       └── Close Button → Dispose dialog
-</pre>
+
+</details>
+
 ---
 
 🧩 Core Systems
 
-1. LazyEyeConfig
+<details>
+<summary><b>1️⃣ LazyEyeConfig</b></summary>
+
+<br>
+
 Purpose: Centralized dichoptic color channel management
 
 Key Features:
@@ -214,7 +273,6 @@ Key Features:
 - Integrates with DatabaseManager for persistent settings
 
 Implementation:
-<pre>
 private static boolean isRightEyeSelected = false;
 private static Color basePlayerColor = new Color(0, 100, 255);  // Cyan
 private static Color baseEnemyColor = new Color(200, 0, 0);     // Red
@@ -226,8 +284,14 @@ public static Color getPlayerColor() {
 public static Color getEnemyColor() {
     return isRightEyeSelected ? basePlayerColor : baseEnemyColor;
 }
-</pre>
-2. PatternManager
+
+</details>
+
+<details>
+<summary><b>2️⃣ PatternManager</b></summary>
+
+<br>
+
 Purpose: Therapeutic motion pattern generation
 
 Pattern Design Philosophy:
@@ -248,11 +312,17 @@ Example Pattern (Phase 3 - Diagonal Pursuit):
 pattern.addSpawn(0, -50, -50, baseSpeed, baseSpeed * 0.8, 30);
 pattern.addSpawn(600, 650, 650, -baseSpeed, -baseSpeed * 0.8, 30);
 
-3. DatabaseManager
+</details>
+
+<details>
+<summary><b>3️⃣ DatabaseManager</b></summary>
+
+<br>
+
 Purpose: Clinical data persistence and progress tracking
 
 Database Schema:
-<pre>
+
 CREATE TABLE mission_progress (
     mission INTEGER PRIMARY KEY,
     total_attempts INTEGER DEFAULT 0,
@@ -268,7 +338,6 @@ CREATE TABLE user_settings (
     enemy_color INTEGER NOT NULL,
     last_updated TEXT DEFAULT CURRENT_TIMESTAMP
 );
-</pre>
 
 Key Methods:
 - incrementAttempt(mission): Records new attempt
@@ -278,7 +347,13 @@ Key Methods:
 - saveUserSettings(): Persists calibration settings
 - loadUserSettings(): Restores settings on startup
 
-4. FishRenderer
+</details>
+
+<details>
+<summary><b>4️⃣ FishRenderer</b></summary>
+
+<br>
+
 Purpose: High-fidelity vector-based fish rendering
 
 Rendering Features:
@@ -290,7 +365,6 @@ Rendering Features:
 - Color channel filtering per entity type
 
 Fish Anatomy Rendering:
-<pre>
 public static void drawFish(Graphics2D g2d, int x, int y, int width, int height, 
                            Color color, boolean facingRight) {
     // Tail: Quadratic bezier curve
@@ -298,8 +372,14 @@ public static void drawFish(Graphics2D g2d, int x, int y, int width, int height,
     // Bottom Fin: Quadratic bezier curve  
     // Body: Filled oval
 }
-</pre>
-5. Game Phase System
+
+</details>
+
+<details>
+<summary><b>5️⃣ Game Phase System</b></summary>
+
+<br>
+
 Purpose: Progressive difficulty and structured gameplay
 
 Phase Progression Logic:
@@ -319,7 +399,12 @@ class PhaseData {
     boolean completed;
 }
 
-6. Custom UI Components
+</details>
+
+<details>
+<summary><b>6️⃣ Custom UI Components</b></summary>
+
+<br>
 
 RoundedButton (StartPanel):
 - Gradient paint (light yellow to dark gold)
@@ -335,11 +420,16 @@ SeaSliderUI (SettingPanel):
 - Ocean-themed color palette (cyan to dark blue)
 - Integrates with SoundManager for volume control
 
+</details>
+
 ---
 
 📊 Data Collection & Analytics
 
-Tracked Metrics
+<details>
+<summary><b>📈 Tracked Metrics</b></summary>
+
+<br>
 
 | Metric | Description | Clinical Value |
 |--------|-------------|----------------|
@@ -354,7 +444,12 @@ Tracked Metrics
 Progress Report Format:
 "Attempts: 12 | Successful: 3 | Success Rate: 25.0% | Highest Phase: 14/15"
 
-Future Analytics Extensions
+</details>
+
+<details>
+<summary><b>🔮 Future Analytics Extensions</b></summary>
+
+<br>
 
 - Performance Visualization: Chart success rates across missions
 - CSV Export: Export progress.db for external analysis
@@ -364,9 +459,16 @@ Future Analytics Extensions
 - Learning Curves: Track improvement over time
 - Compliance Dashboard: Session frequency monitoring
 
+</details>
+
 ---
 
 🧪 Therapeutic Design Principles
+
+<details>
+<summary><b>🎯 Click to view therapeutic principles</b></summary>
+
+<br>
 
 | Principle | Implementation | Therapeutic Benefit |
 |-----------|---------------|---------------------|
@@ -410,11 +512,16 @@ Phase 14: FINAL BOSS
 - Maximum speed and density
 - Ultimate binocular integration test
 
+</details>
+
 ---
 
 🚀 Installation & Setup
 
-Prerequisites
+<details>
+<summary><b>💻 Prerequisites</b></summary>
+
+<br>
 
 - Java Development Kit (JDK): Version 21 or higher
   Download: https://www.oracle.com/java/technologies/downloads/
@@ -427,11 +534,16 @@ Prerequisites
   
 - Audio Support: Java Sound API (built-in)
 
-Installation Steps
+</details>
+
+<details>
+<summary><b>⚙️ Installation Steps</b></summary>
+
+<br>
 
 1. Clone the Repository
    git clone https://github.com/clerancebae/AquaVisionx.git
-   cd Amblyopia-Therapy-Game
+   cd AquaVisionx
 
 2. Set Up Dependencies
    
@@ -478,9 +590,10 @@ Installation Steps
 5. Run Application
    
    Command Line:
+   # Linux/Mac
    java -cp .:sqlite-jdbc-3.44.1.0.jar:resources Main
    
-   Windows:
+   # Windows
    java -cp .;sqlite-jdbc-3.44.1.0.jar;resources Main
    
    IDE:
@@ -493,7 +606,12 @@ Installation Steps
    - Background music starts automatically
    - Navigate to Settings to configure your lazy eye
 
-Troubleshooting
+</details>
+
+<details>
+<summary><b>🔧 Troubleshooting</b></summary>
+
+<br>
 
 Issue: "ClassNotFoundException: org.sqlite.JDBC"
 Solution: Ensure sqlite-jdbc JAR is in classpath. Check IDE library configuration.
@@ -513,11 +631,16 @@ Solution: Close all other instances of the application. Delete progress.db to re
 Issue: Color calibration not saving
 Solution: Check database write permissions. Verify user_settings table exists.
 
+</details>
+
 ---
 
 🧩 Extensibility & Future Work
 
-Planned Enhancements
+<details>
+<summary><b>🚀 Planned Enhancements</b></summary>
+
+<br>
 
 - [ ] Adaptive Difficulty Engine: ML-based performance modeling
       Track player performance across missions and automatically adjust
@@ -549,7 +672,7 @@ Planned Enhancements
       Keyboard-only navigation
       Adjustable font sizes
 
-Extension Points
+Extension Points:
 
 Custom Pattern Plugin Interface:
 public interface TherapyPattern {
@@ -591,6 +714,8 @@ public class DatabaseMigration {
     }
 }
 
+</details>
+
 ---
 
 🧑‍⚕️ Target Audience
@@ -611,6 +736,11 @@ Secondary Users
 ---
 
 📚 Academic Context
+
+<details>
+<summary><b>🎓 Academic Applications</b></summary>
+
+<br>
 
 Suitable For
 
@@ -651,6 +781,8 @@ Sample Research Questions
 4. Can gameplay metrics predict real-world visual acuity improvements?
 5. What is the optimal session duration and frequency for dichoptic training?
 
+</details>
+
 ---
 
 ⚠️ Medical Disclaimer
@@ -677,7 +809,7 @@ This software is provided "as-is" without any warranty of effectiveness.
 
 MIT License
 
-Copyright (c) 2025 clerancbae
+Copyright (c) 2025 clerancebae
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -717,9 +849,9 @@ Special Thanks:
 
 📞 Contact & Support
 
-- GitHub Issues: https://github.com/clerance/AquaVision/issues
+- GitHub Issues: https://github.com/clerancebae/AquaVision/issues
 - Discussions: https://github.com/clerancebae/AquaVision/discussions
-- Email: kilic-berke@hotmail.com
+- Email: kilic-berke@hotmail.com , birbenbeyza07@gmail.com
 
 For Clinical Inquiries:
 Please consult with your ophthalmologist or vision therapist regarding 
@@ -732,27 +864,6 @@ Open an issue on GitHub with:
 - Error messages or screenshots
 - Steps to reproduce the problem
 
----
-
-/*🌟 Citation
-
-If you use this software in your research, please cite:
-
-BibTeX Format:
-@software{amblyopia_therapy_game_2025,
-  author = {Your Name},
-  title = {Dichoptic Amblyopia Therapy Game: A Serious Game for Binocular 
-           Vision Rehabilitation},
-  year = {2025},
-  url = {https://github.com/YourUsername/Amblyopia-Therapy-Game},
-  note = {Java-based dichoptic training application for amblyopia treatment}
-}
-
-APA Format:
-Your Name. (2025). Dichoptic Amblyopia Therapy Game: A Serious Game for 
-Binocular Vision Rehabilitation [Computer software]. 
-https://github.com/clerancebae/AquaVision
-*/
 ---
 
 📈 Version History
@@ -794,5 +905,3 @@ Made with ❤️ for vision science and therapeutic gaming
 🐛 Report Bug: https://github.com/clerancebae/AquaVision/issues
 💡 Request Feature: https://github.com/clerancebae/AquaVision/issues
 📖 Wiki: https://github.com/clerancebae/AquaVision/wiki
-
----

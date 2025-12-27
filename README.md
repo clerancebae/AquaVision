@@ -901,7 +901,7 @@ Recommended Practices:
 
 Made with ❤️ for vision science and therapeutic gaming
 
-⭐ Star this repo: https://github.com/clerancebae/AquaVision
-🐛 Report Bug: https://github.com/clerancebae/AquaVision/issues
-💡 Request Feature: https://github.com/clerancebae/AquaVision/issues
-📖 Wiki: https://github.com/clerancebae/AquaVision/wiki
+⭐ Star this repo: https://github.com/clerancebae/AquaVision <br>
+🐛 Report Bug: https://github.com/clerancebae/AquaVision/issues <br>
+💡 Request Feature: https://github.com/clerancebae/AquaVision/issues <br>
+📖 Wiki: https://github.com/clerancebae/AquaVision/wiki <br>

@@ -17,9 +17,10 @@ jobs:
           java-version: '17'
 
       - name: Compile Java sources
+        shell: pwsh
         run: |
           mkdir build
-          javac -encoding UTF-8 -d build src/*.java src/**/*.java
+          javac -encoding UTF-8 -d build (Get-ChildItem -Recurse -Include *.java src).FullName
 
       - name: Create runnable JAR
         run: |

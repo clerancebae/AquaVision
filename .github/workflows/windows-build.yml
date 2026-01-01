@@ -1,0 +1,41 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Compile Java sources
+        run: |
+          mkdir build
+          javac -encoding UTF-8 -d build src/*.java src/**/*.java
+
+      - name: Create runnable JAR
+        run: |
+          jar cfe AquaVision.jar Main -C build .
+
+      - name: Build Windows EXE
+        run: |
+          jpackage ^
+            --name AquaVision ^
+            --input . ^
+            --main-jar AquaVision.jar ^
+            --icon resources/appLogo.ico ^
+            --type exe ^
+            --win-console false
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifac

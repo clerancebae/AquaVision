@@ -29,16 +29,19 @@ jobs:
       - name: Build Windows EXE
         shell: cmd
         run: |
+          mkdir output
           jpackage ^
             --name AquaVision ^
             --input . ^
             --main-jar AquaVision.jar ^
             --main-class Main ^
             --icon resources/appLogo.ico ^
-            --type exe
+            --type exe ^
+            --dest output
 
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v4
         with:
           name: AquaVision-Windows
-          path: AquaVision/*
+          # This looks inside the 'output' folder for any .exe file
+          path: output/*.exe

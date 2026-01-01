@@ -36,9 +36,8 @@ public class Main {
 
         StartPanel panel = new StartPanel();
         frame.add(panel);
-        frame.setUndecorated(false);
+        frame.setUndecorated(true);
         frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
 }

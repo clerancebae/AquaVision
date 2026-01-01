@@ -41,5 +41,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AquaVision-Windows
-          path: AquaVision/AquaVision.exe
+          path: AquaVision/
           # Or use: path: AquaVision/**  to upload the entire folder

@@ -27,11 +27,13 @@ jobs:
           jar cfe AquaVision.jar Main -C build .
 
       - name: Build Windows EXE
+        shell: cmd
         run: |
           jpackage ^
             --name AquaVision ^
             --input . ^
             --main-jar AquaVision.jar ^
+            --main-class Main ^
             --icon resources/appLogo.ico ^
             --type exe ^
             --win-console false

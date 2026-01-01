@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseManager {
     private static final String DB_URL = "jdbc:sqlite:progress.db";
@@ -24,12 +26,23 @@ public class DatabaseManager {
                 last_updated TEXT DEFAULT CURRENT_TIMESTAMP
             );
             """;
+        String historySql = """
+    CREATE TABLE IF NOT EXISTS attempt_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mission INTEGER,
+        attempt_date TEXT,
+        highest_phase_reached INTEGER,
+        completed INTEGER,  -- 1 = tamamlandı, 0 = başarısız
+        total_time_seconds REAL
+    );
+    """;
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              Statement stmt = conn.createStatement()) {
 
             stmt.execute(sql);
             stmt.execute(settingsSql);
+            stmt.execute(historySql);
             System.out.println("DB ready!");
 
         } catch (SQLException e) {
@@ -178,5 +191,82 @@ public class DatabaseManager {
         } catch (SQLException e) {
             System.err.println("Settings yükleme hatası: " + e.getMessage());
         }
+    }
+
+    public static void logAttempt(int mission, int highestPhase, boolean completed, double totalSeconds) {
+        String sql = """
+        INSERT INTO attempt_history 
+        (mission, attempt_date, highest_phase_reached, completed, total_time_seconds)
+        VALUES (?, CURRENT_TIMESTAMP, ?, ?, ?)
+        """;
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, mission);
+            pstmt.setInt(2, highestPhase);
+            pstmt.setInt(3, completed ? 1 : 0);
+            pstmt.setDouble(4, totalSeconds);
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.err.println("Attempt log hatası: " + e.getMessage());
+        }
+    }
+    public static String generateAsciiSuccessRateGraph(int mission) {
+        String sql = "SELECT completed FROM attempt_history WHERE mission = ? ORDER BY attempt_date ASC";
+
+        List<Boolean> successes = new ArrayList<>();
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, mission);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                successes.add(rs.getInt("completed") == 1);
+            }
+
+        } catch (SQLException e) {
+            return "Graph could not be loaded.";
+        }
+
+        if (successes.isEmpty()) {
+            return "No attempts recorded for this mission yet.";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== MISSION ").append(mission).append(" SUCCESS RATE PROGRESS ===\n\n");
+
+        // Draw percentage lines from 100% down to 0% in 20% steps
+        for (int level = 100; level >= 0; level -= 20) {
+            sb.append(String.format("%3d%% |", level));
+
+            int cumulativeSuccess = 0;
+            for (int i = 0; i < successes.size(); i++) {
+                cumulativeSuccess += successes.get(i) ? 1 : 0;
+                double rate = (double) cumulativeSuccess / (i + 1) * 100.0;
+
+                sb.append(rate >= level ? " ■" : "  ");
+            }
+            sb.append("\n");
+        }
+
+        // Bottom axis
+        sb.append("      +");
+        for (int i = 0; i < successes.size(); i++) {
+            sb.append("--");
+        }
+        sb.append("\n        ");
+        for (int i = 0; i < successes.size(); i++) {
+            sb.append(String.format("%2d ", i + 1));
+        }
+
+        sb.append("\n\n");
+        sb.append("■ = Cumulative success rate reached or exceeded this level by that attempt\n");
+        sb.append("The graph shows cumulative (running) success rate – highlighting improvement over time!\n");
+
+        return sb.toString();
     }
 }

@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.ImageFilter;
 import java.net.URL;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class MissionPanel extends BasePanel {
     private ImageIcon lockedIcon;
 
     // Track unlocked levels (can be loaded from save file later)
-    private int maxUnlockedLevel = 1;
+    public int maxUnlockedLevel = 1;
 
     public MissionPanel(JPanel strtPanel) {
         this.setPreferredSize(new Dimension(600, 600));
@@ -33,6 +34,9 @@ public class MissionPanel extends BasePanel {
         this.strtPanel = strtPanel;
 
         loadImages();
+
+        loadUnlockedLevelsFromDB();
+
         initButtons();
     }
 
@@ -255,6 +259,32 @@ public class MissionPanel extends BasePanel {
         } else {
             g.setColor(new Color(100, 200, 255));
             g.fillRect(0, 0, getWidth(), getHeight());
+        }
+    }
+    private void loadUnlockedLevelsFromDB() {
+        System.out.println("Database'den tamamlanan mission'lar okunuyor...");
+
+        maxUnlockedLevel = 1; // Varsayılan: sadece Mission 1 açık
+
+        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:progress.db");
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(
+                     "SELECT MAX(mission) AS last_completed FROM mission_progress WHERE successful_completions > 0")) {
+
+            if (rs.next() && rs.getInt("last_completed") > 0) {
+                int lastCompleted = rs.getInt("last_completed");
+                maxUnlockedLevel = lastCompleted + 1; // Tamamlanan son mission'dan bir sonraki açık olsun
+
+                if (maxUnlockedLevel > 5) {
+                    maxUnlockedLevel = 5;
+                }
+
+                System.out.println("Son tamamlanan mission: " + lastCompleted + " → Açık olacak: " + maxUnlockedLevel);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Database okuma hatası: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

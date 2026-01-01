@@ -35,8 +35,7 @@ jobs:
             --main-jar AquaVision.jar ^
             --main-class Main ^
             --icon resources/appLogo.ico ^
-            --type exe ^
-            --win-console false
+            --type exe
 
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v4

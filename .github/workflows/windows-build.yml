@@ -1,5 +1,4 @@
 name: Build Windows EXE
-
 on:
   push:
     branches: [ main ]
@@ -7,7 +6,6 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

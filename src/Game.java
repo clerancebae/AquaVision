@@ -35,6 +35,10 @@ public class Game extends BasePanel {
 
     private MissionCompletionListener completionListener;
 
+    private long lastHitTime = 0;
+    private static final long INVINCIBILITY_MS = 500;
+
+
     public Game(int levelNumber) {
         super();
         this.levelNumber = levelNumber;
@@ -177,6 +181,7 @@ public class Game extends BasePanel {
         long totalTime = 0;
         for (PhaseData data : phaseRecords) totalTime += data.survivedDuration;
         double totalSeconds = totalTime / 1000.0;
+        DatabaseManager.logAttempt(levelNumber, 15, true, totalTime / 1000.0);
 
         JDialog dialog = new JDialog(
                 (JFrame) SwingUtilities.getWindowAncestor(this),
@@ -206,6 +211,45 @@ public class Game extends BasePanel {
         statsLabel.setFont(new Font("Arial", Font.PLAIN, 15));
         statsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // === YENİ: GELİŞME GRAFİĞİ BUTONU ===
+        JButton graphButton = new JButton("View Success Rate Graph");
+        graphButton.setFont(new Font("Arial", Font.BOLD, 15));
+        graphButton.setFocusPainted(false);
+        graphButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        graphButton.setBackground(new Color(0, 150, 0));
+        graphButton.setForeground(Color.WHITE);
+        graphButton.setOpaque(true);
+        graphButton.setBorderPainted(false);
+        graphButton.addActionListener(e -> {
+            String graph = DatabaseManager.generateAsciiSuccessRateGraph(levelNumber);
+            JTextArea graphArea = new JTextArea(graph);
+            graphArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+            graphArea.setEditable(false);
+            graphArea.setBackground(new Color(240, 240, 240));
+            graphArea.setForeground(Color.BLACK);
+
+            JScrollPane scrollPane = new JScrollPane(graphArea);
+            scrollPane.setPreferredSize(new Dimension(560, 420));
+
+            JOptionPane.showMessageDialog(
+                    dialog,
+                    scrollPane,
+                    "Mission " + levelNumber + " - Improvement Graph",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        });
+
+        panel.add(title);
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(missionLabel);
+        panel.add(Box.createVerticalStrut(6));
+        panel.add(timeLabel);
+        panel.add(Box.createVerticalStrut(6));
+        panel.add(statsLabel);
+        panel.add(Box.createVerticalStrut(12));
+        panel.add(graphButton);                    // <-- Grafik butonu eklendi
+        panel.add(Box.createVerticalStrut(12));
+
         JButton continueBtn = new JButton("Continue");
         continueBtn.setFont(new Font("Arial", Font.BOLD, 16));
         continueBtn.setFocusPainted(false);
@@ -217,14 +261,6 @@ public class Game extends BasePanel {
             returnToMissionPanel();
         });
 
-        panel.add(title);
-        panel.add(Box.createVerticalStrut(8));
-        panel.add(missionLabel);
-        panel.add(Box.createVerticalStrut(6));
-        panel.add(timeLabel);
-        panel.add(Box.createVerticalStrut(6));
-        panel.add(statsLabel);
-        panel.add(Box.createVerticalStrut(12));
         panel.add(continueBtn);
 
         dialog.setUndecorated(true);
@@ -244,6 +280,10 @@ public class Game extends BasePanel {
             phaseRecords.get(phaseRecords.size() - 1).complete(false);
 
         int currentReached = currentPhase + 1;
+        long totalTime = 0;
+        for (PhaseData data : phaseRecords) totalTime += data.survivedDuration;
+        DatabaseManager.logAttempt(levelNumber, currentReached, false, totalTime / 1000.0);
+
         int previousRecord = 0;
 
         try (Connection conn = DriverManager.getConnection("jdbc:sqlite:progress.db");
@@ -275,9 +315,7 @@ public class Game extends BasePanel {
         title.setFont(new Font("Arial", Font.BOLD, 26));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel phaseLabel = new JLabel(
-                "Phase " + currentReached + " / " + TOTAL_PHASES
-        );
+        JLabel phaseLabel = new JLabel("Phase " + currentReached + " / " + TOTAL_PHASES);
         phaseLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         phaseLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -292,6 +330,49 @@ public class Game extends BasePanel {
         motivation2.setFont(new Font("Arial", Font.PLAIN, 14));
         motivation1.setAlignmentX(Component.CENTER_ALIGNMENT);
         motivation2.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // === YENİ: GELİŞME GRAFİĞİ BUTONU ===
+        JButton graphButton = new JButton("View Success Rate Graph");
+        graphButton.setFont(new Font("Arial", Font.BOLD, 15));
+        graphButton.setFocusPainted(false);
+        graphButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        graphButton.setBackground(new Color(200, 0, 0)); // Kırmızımsı, dikkat çeksin
+        graphButton.setForeground(Color.WHITE);
+        graphButton.setOpaque(true);
+        graphButton.setBorderPainted(false);
+        graphButton.addActionListener(e -> {
+            String graph = DatabaseManager.generateAsciiSuccessRateGraph(levelNumber);
+            JTextArea graphArea = new JTextArea(graph);
+            graphArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+            graphArea.setEditable(false);
+            graphArea.setBackground(new Color(240, 240, 240));
+            graphArea.setForeground(Color.BLACK);
+
+            JScrollPane scrollPane = new JScrollPane(graphArea);
+            scrollPane.setPreferredSize(new Dimension(560, 420));
+
+            JOptionPane.showMessageDialog(
+                    dialog,
+                    scrollPane,
+                    "Mission " + levelNumber + " - Improvement Graph",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        });
+
+        panel.add(title);
+        panel.add(Box.createVerticalStrut(6));
+        panel.add(phaseLabel);
+        panel.add(Box.createVerticalStrut(4));
+        panel.add(progressLabel);
+        panel.add(Box.createVerticalStrut(6));
+        panel.add(motivation1);
+        panel.add(motivation2);
+        panel.add(Box.createVerticalStrut(12));
+        panel.add(graphButton);                    // <-- Grafik butonu eklendi
+        panel.add(Box.createVerticalStrut(12));
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setOpaque(false);
 
         JButton retryBtn = new JButton("Try Again");
         JButton exitBtn = new JButton("Exit");
@@ -311,20 +392,9 @@ public class Game extends BasePanel {
             returnToMissionPanel();
         });
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setOpaque(false);
         buttonPanel.add(retryBtn);
         buttonPanel.add(exitBtn);
 
-        panel.add(title);
-        panel.add(Box.createVerticalStrut(6));
-        panel.add(phaseLabel);
-        panel.add(Box.createVerticalStrut(4));
-        panel.add(progressLabel);
-        panel.add(Box.createVerticalStrut(6));
-        panel.add(motivation1);
-        panel.add(motivation2);
-        panel.add(Box.createVerticalStrut(10));
         panel.add(buttonPanel);
 
         dialog.setUndecorated(true);
@@ -333,7 +403,6 @@ public class Game extends BasePanel {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
-
 
     private void restartMission() {
         enemyFishes.clear();
@@ -419,46 +488,19 @@ public class Game extends BasePanel {
     private void updateGame() {
         if (isGameOver || isPaused) return;
 
-        // Update phase timer
         long elapsed = System.currentTimeMillis() - phaseStartTime;
 
         // Update player
         player.update();
 
-        // Check collision with enemy fish
-        int paddingX = -3;
-        int paddingY = -2;
-
-        Rectangle playerBounds = new Rectangle(
-                player.getX() + paddingX,
-                player.getY() + paddingY,
-                player.getWidth() - (paddingX * 2),
-                player.getHeight() - (paddingY * 2)
-        );
-
-        for (EnemyFish fish : enemyFishes) {
-            Rectangle fishBounds = new Rectangle(
-                    (int)fish.x + paddingX,
-                    (int)fish.y + paddingY,
-                    fish.getWidth() - (paddingX * 2),
-                    fish.getHeight() - (paddingY * 2)
-            );
-
-            if (playerBounds.intersects(fishBounds)) {
-                // Collision detected - mission fails
-                failMission();
-                return;
-            }
-        }
-
         // Update enemy fish
         Iterator<EnemyFish> it = enemyFishes.iterator();
         boolean allFishGone = true;
+
         while (it.hasNext()) {
             EnemyFish fish = it.next();
             fish.update();
 
-            // Remove fish that went off-screen
             if (fish.x < -100 || fish.x > 700 || fish.y < -100 || fish.y > 700) {
                 it.remove();
             } else {
@@ -466,11 +508,28 @@ public class Game extends BasePanel {
             }
         }
 
-        // If all pattern fish are gone, advance to next phase
-        if (allFishGone && elapsed > 1000) { // Wait at least 1 second
+        // Multi-component collision detection
+        java.util.List<Rectangle> playerParts = player.getBodyParts();
+
+        for (EnemyFish fish : enemyFishes) {
+            java.util.List<Rectangle> fishParts = fish.getBodyParts();
+
+            // Check each player part against each fish part
+            for (Rectangle playerPart : playerParts) {
+                for (Rectangle fishPart : fishParts) {
+                    if (playerPart.intersects(fishPart)) {
+                        failMission();
+                        return;
+                    }
+                }
+            }
+        }
+
+        if (allFishGone && elapsed > 1000) {
             advancePhase();
         }
     }
+
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -488,35 +547,6 @@ public class Game extends BasePanel {
 
         // Draw player (on top)
         player.draw(g);
-    }
-    private JDialog createStyledDialog(String titleText, Color backgroundColor) {
-        JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), titleText, true);
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(backgroundColor);
-        panel.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50)); // Daha küçük padding
-        dialog.setUndecorated(true);
-        dialog.setContentPane(panel);
-        return dialog;
-    }
-
-    private JButton createStyledButton(String text, Color bgColor) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Arial", Font.BOLD, 18));
-        btn.setBackground(bgColor);
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btn.setMaximumSize(new Dimension(300, 50)); // Butonları sınırlı genişlikte tut
-        return btn;
-    }
-
-    private JLabel createCenteredLabel(String text, int fontSize, Color color) {
-        JLabel label = new JLabel("<html><div style='text-align: center;'>" + text + "</div></html>");
-        label.setFont(new Font("Arial", fontSize == 0 ? Font.PLAIN : Font.BOLD, fontSize == 0 ? 18 : fontSize));
-        label.setForeground(color);
-        label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        return label;
     }
 }
 
@@ -823,7 +853,6 @@ class EnemyFish {
         this.vy = vy;
         this.phase = Math.random() * Math.PI * 2;
         this.facingRight = vx > 0;
-
     }
 
 
@@ -831,7 +860,6 @@ class EnemyFish {
         x += vx;
         y += vy;
 
-        // Daha yumuşak dalga hareketi
         y += Math.sin(phase) * 0.3;
         phase += 0.1;
     }
@@ -841,17 +869,70 @@ class EnemyFish {
 
         Color enemyColor = LazyEyeConfig.getEnemyColor();
 
+
         FishRenderer.drawFish(g2d, (int)x, (int)y, width, height, enemyColor, facingRight);
     }
 
-    // Çarpışma / ölçüm getter'ları
-    public int getWidth() { return width; }
-    public int getHeight() { return height; }
+    public java.util.List<Rectangle> getBodyParts() {
+        java.util.List<Rectangle> parts = new java.util.ArrayList<>();
+
+        // Account for the 0.85 scale in FishRenderer
+        double scale = 0.85;
+        int scaledW = (int)(width * scale);
+        int scaledH = (int)(height * scale);
+        int offsetX = (width - scaledW) / 2;
+        int offsetY = (height - scaledH) / 2;
+
+        // Shrink hitboxes by 15% for more forgiving collision
+        double shrink = 0.85;
+
+        if (facingRight) {
+            // Head (front right)
+            int headX = (int) (x + offsetX + scaledW * 0.62);     // biraz daha sağa (öne doğru)
+            int headY = (int) (y + offsetY + scaledH * 0.20);     // daha merkezli, yukarı-aşağı geniş
+            int headW = (int) (scaledW * 0.32);                  // daha geniş kafa (shrink kaldirdim ki erken çarpsın)
+            int headH = (int) (scaledH * 0.60);                  // daha uzun kafa
+            parts.add(new Rectangle(headX, headY, headW, headH));
+
+            // Body middle
+            int bodyX = (int) (x + offsetX + scaledW * 0.35);
+            int bodyY = (int) (y + offsetY + scaledH * 0.25);
+            int bodyW = (int) (scaledW * 0.28 * shrink);
+            int bodyH = (int) (scaledH * 0.50 * shrink);
+            parts.add(new Rectangle(bodyX, bodyY, bodyW, bodyH));
+
+            // Tail base (back left)
+            int tailX = (int) (x + offsetX + scaledW * 0.16);
+            int tailY = (int) (y + offsetY + scaledH * 0.38);
+            int tailW = (int) (scaledW * 0.22 * shrink);
+            int tailH = (int) (scaledH * 0.24 * shrink);
+            parts.add(new Rectangle(tailX, tailY, tailW, tailH));
+        } else {
+            // Head (front left)
+            int headX = (int) (x + offsetX + scaledW * 0.00);     // tam sola dayalı, daha öne!
+            int headY = (int) (y + offsetY + scaledH * 0.20);     // dikeyde daha merkezli
+            int headW = (int) (scaledW * 0.32);                  // daha geniş kafa
+            int headH = (int) (scaledH * 0.60);                  // daha uzun kafa
+            parts.add(new Rectangle(headX, headY, headW, headH));
+
+            // Body middle
+            int bodyX = (int) (x + offsetX + scaledW * 0.26);
+            int bodyY = (int) (y + offsetY + scaledH * 0.25);
+            int bodyW = (int) (scaledW * 0.28 * shrink);
+            int bodyH = (int) (scaledH * 0.50 * shrink);
+            parts.add(new Rectangle(bodyX, bodyY, bodyW, bodyH));
+
+            // Tail base (back right)
+            int tailX = (int) (x + offsetX + scaledW * 0.52);
+            int tailY = (int) (y + offsetY + scaledH * 0.38);
+            int tailW = (int) (scaledW * 0.22 * shrink);
+            int tailH = (int) (scaledH * 0.24 * shrink);
+            parts.add(new Rectangle(tailX, tailY, tailW, tailH));
+        }
+
+        return parts;
+    }
 }
-
-
-
-
 // Player class
 class Player {
     private double x, y;
@@ -916,7 +997,6 @@ class Player {
         x += velocityX;
         y += velocityY;
 
-        // Ekran sınırları kontrolü
         if (x < 0) { x = 0; velocityX = 0; }
         if (x > 600 - width) { x = 600 - width; velocityX = 0; }
         if (y < 0) { y = 0; velocityY = 0; }
@@ -928,12 +1008,66 @@ class Player {
 
         Color playerColor = LazyEyeConfig.getPlayerColor();
 
+
         FishRenderer.drawFish(g2d, (int)x, (int)y, width, height, playerColor, facingRight);
     }
+    public java.util.List<Rectangle> getBodyParts() {
+        java.util.List<Rectangle> parts = new java.util.ArrayList<>();
 
+        // Account for the 0.85 scale in FishRenderer
+        double scale = 0.85;
+        int scaledW = (int)(width * scale);
+        int scaledH = (int)(height * scale);
+        int offsetX = (width - scaledW) / 2;
+        int offsetY = (height - scaledH) / 2;
 
-    public int getX() { return (int) x; }
-    public int getY() { return (int) y; }
-    public int getWidth() { return width; }
-    public int getHeight() { return height; }
+        // Shrink hitboxes by 15% for more forgiving collision
+        double shrink = 0.85;
+
+        if (facingRight) {
+            // Head (front right)
+            int headX = (int) (x + offsetX + scaledW * 0.62);     // biraz daha sağa (öne doğru)
+            int headY = (int) (y + offsetY + scaledH * 0.20);     // daha merkezli, yukarı-aşağı geniş
+            int headW = (int) (scaledW * 0.32);                  // daha geniş kafa (shrink kaldirdim ki erken çarpsın)
+            int headH = (int) (scaledH * 0.60);                  // daha uzun kafa
+            parts.add(new Rectangle(headX, headY, headW, headH));
+
+            // Body middle
+            int bodyX = (int) (x + offsetX + scaledW * 0.35);
+            int bodyY = (int) (y + offsetY + scaledH * 0.25);
+            int bodyW = (int) (scaledW * 0.28 * shrink);
+            int bodyH = (int) (scaledH * 0.50 * shrink);
+            parts.add(new Rectangle(bodyX, bodyY, bodyW, bodyH));
+
+            // Tail base (back left)
+            int tailX = (int) (x + offsetX + scaledW * 0.16);
+            int tailY = (int) (y + offsetY + scaledH * 0.38);
+            int tailW = (int) (scaledW * 0.22 * shrink);
+            int tailH = (int) (scaledH * 0.24 * shrink);
+            parts.add(new Rectangle(tailX, tailY, tailW, tailH));
+        } else {
+            // Head (front left)
+            int headX = (int) (x + offsetX + scaledW * 0.00);     // tam sola dayalı, daha öne!
+            int headY = (int) (y + offsetY + scaledH * 0.20);     // dikeyde daha merkezli
+            int headW = (int) (scaledW * 0.32);                  // daha geniş kafa
+            int headH = (int) (scaledH * 0.60);                  // daha uzun kafa
+            parts.add(new Rectangle(headX, headY, headW, headH));
+
+            // Body middle
+            int bodyX = (int) (x + offsetX + scaledW * 0.26);
+            int bodyY = (int) (y + offsetY + scaledH * 0.25);
+            int bodyW = (int) (scaledW * 0.28 * shrink);
+            int bodyH = (int) (scaledH * 0.50 * shrink);
+            parts.add(new Rectangle(bodyX, bodyY, bodyW, bodyH));
+
+            // Tail base (back right)
+            int tailX = (int) (x + offsetX + scaledW * 0.52);
+            int tailY = (int) (y + offsetY + scaledH * 0.38);
+            int tailW = (int) (scaledW * 0.22 * shrink);
+            int tailH = (int) (scaledH * 0.24 * shrink);
+            parts.add(new Rectangle(tailX, tailY, tailW, tailH));
+        }
+
+        return parts;
+    }
 }

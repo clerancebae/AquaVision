@@ -2,7 +2,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
-import java.io.File;
+import java.net.URL;
 
 public class SoundManager {
 
@@ -11,12 +11,16 @@ public class SoundManager {
 
     public static void init() {
         try {
-            AudioInputStream audio =
-                    AudioSystem.getAudioInputStream(
-                            new File("resources/Child_Game_Bg_Music.wav"));
+            URL soundUrl = SoundManager.class.getResource("/Child_Game_Bg_Music.wav");
+            if (soundUrl == null) {
+                System.err.println("Sound file not found in classpath");
+                return;
+            }
+            AudioInputStream audio = AudioSystem.getAudioInputStream(soundUrl);
 
             music = AudioSystem.getClip();
             music.open(audio);
+            audio.close();
 
             volume = (FloatControl)
                     music.getControl(FloatControl.Type.MASTER_GAIN);

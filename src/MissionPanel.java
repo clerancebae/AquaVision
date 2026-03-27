@@ -2,7 +2,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.ImageFilter;
 import java.net.URL;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,10 +47,10 @@ public class MissionPanel extends BasePanel {
         System.out.println("--- Loading Images ---");
 
         // Background
-        backgroundImage = safeLoadImage("resources/MissionBackground.png");
+        backgroundImage = safeLoadImage("/MissionBackground.png");
 
         // Active icon
-        Image imgActive = safeLoadImage("resources/level_active.png");
+        Image imgActive = safeLoadImage("/level_active.png");
         if (imgActive != null) {
             Image scaled = imgActive.getScaledInstance(BUTTON_SIZE, BUTTON_SIZE, Image.SCALE_SMOOTH);
             shellIcon = new ImageIcon(scaled);
@@ -58,7 +61,7 @@ public class MissionPanel extends BasePanel {
         }
 
         // Locked icon
-        Image imgLocked = safeLoadImage("resources/level_locked.png");
+        Image imgLocked = safeLoadImage("/level_locked.png");
         if (imgLocked != null) {
             Image scaled = imgLocked.getScaledInstance(BUTTON_SIZE, BUTTON_SIZE, Image.SCALE_SMOOTH);
             lockedIcon = new ImageIcon(scaled);
@@ -73,14 +76,16 @@ public class MissionPanel extends BasePanel {
         }
     }
 
-    private Image safeLoadImage(String fileName) {
+    private Image safeLoadImage(String resourcePath) {
         try {
-            URL url = getClass().getResource("resources/" + fileName);
+            URL url = getClass().getResource(resourcePath);
             if (url != null) {
                 return new ImageIcon(url).getImage();
             }
-            return new ImageIcon(fileName).getImage();
+            System.err.println("Resource not found: " + resourcePath);
+            return null;
         } catch (Exception e) {
+            System.err.println("Error loading resource: " + resourcePath + " - " + e.getMessage());
             return null;
         }
     }
@@ -98,7 +103,7 @@ public class MissionPanel extends BasePanel {
         JButton returnButton = new JButton();
         returnButton.setBounds(10, 10, 50, 50);
 
-        Image img = safeLoadImage("resources/return.png");
+        Image img = safeLoadImage("/return.png");
         if (img != null) {
             Image scaled = img.getScaledInstance(100, 50, Image.SCALE_SMOOTH);
             returnButton.setIcon(new ImageIcon(scaled));
@@ -266,7 +271,7 @@ public class MissionPanel extends BasePanel {
 
         maxUnlockedLevel = 1; // Varsayılan: sadece Mission 1 açık
 
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:progress.db");
+        try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(
                      "SELECT MAX(mission) AS last_completed FROM mission_progress WHERE successful_completions > 0")) {

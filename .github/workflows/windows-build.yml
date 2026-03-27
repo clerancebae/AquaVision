@@ -1,49 +1,68 @@
-name: Build Windows EXE
+name: Build Installers
 on:
   push:
     branches: [ main ]
-    tags: 
+    tags:
       - 'v*'
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            type: exe
+            artifact: AquaVision-Windows
+          - os: macos-latest
+            type: dmg
+            artifact: AquaVision-macOS
+          - os: ubuntu-latest
+            type: deb
+            artifact: AquaVision-Linux
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
+
+      - name: Download sqlite-jdbc
+        shell: bash
+        run: |
+          curl -L -o sqlite-jdbc.jar https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.45.1.0/sqlite-jdbc-3.45.1.0.jar
 
       - name: Compile Java sources
-        shell: pwsh
+        shell: bash
         run: |
-          mkdir build
-          javac -encoding UTF-8 -d build (Get-ChildItem -Recurse -Include *.java src).FullName
+          mkdir -p build
+          javac -encoding UTF-8 -cp sqlite-jdbc.jar -d build src/*.java
 
-      - name: Create runnable JAR
+      - name: Create JAR with resources
+        shell: bash
         run: |
+          cp -r resources/* build/
           jar cfe AquaVision.jar Main -C build .
 
-      - name: Build Windows EXE
-        shell: cmd
+      - name: Build native installer
+        shell: bash
         run: |
-          mkdir output
-          jpackage ^
-            --name AquaVision ^
-            --input . ^
-            --main-jar AquaVision.jar ^
-            --main-class Main ^
-            --icon resources/appLogo.ico ^
-            --type exe ^
-            --dest output
+          mkdir -p output
+          jpackage \
+            --name AquaVision \
+            --input . \
+            --main-jar AquaVision.jar \
+            --main-class Main \
+            --type ${{ matrix.type }} \
+            --dest output \
+            --app-version "1.0.0"
 
-      - name: Upload EXE artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AquaVision-Windows
-          # This looks inside the 'output' folder for any .exe file
-          path: output/*.exe
+          name: ${{ matrix.artifact }}
+          path: output/*

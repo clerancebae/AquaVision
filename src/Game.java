@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -286,7 +285,7 @@ public class Game extends BasePanel {
 
         int previousRecord = 0;
 
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:progress.db");
+        try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(
                      "SELECT highest_phase_reached FROM mission_progress WHERE mission = ?")) {
 

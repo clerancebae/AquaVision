@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.net.URL;
 
 public class StartPanel extends BasePanel {
     private final Image scaledBackground;
@@ -13,9 +14,13 @@ public class StartPanel extends BasePanel {
         setLayout(null);
 
         // Background
-        ImageIcon backgroundImg = new ImageIcon("resources/background.png");
-        Image img = backgroundImg.getImage();
-        scaledBackground = img.getScaledInstance(600, 600, Image.SCALE_SMOOTH);
+        URL bgUrl = getClass().getResource("/background.png");
+        if (bgUrl != null) {
+            scaledBackground = new ImageIcon(bgUrl).getImage().getScaledInstance(600, 600, Image.SCALE_SMOOTH);
+        } else {
+            System.err.println("Resource not found: /background.png");
+            scaledBackground = null;
+        }
 
         // --- CHANGED TO ROUNDEDBUTTON ---
         RoundedButton startBtn = new RoundedButton("Start");

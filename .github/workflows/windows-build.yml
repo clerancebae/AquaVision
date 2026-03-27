@@ -16,9 +16,6 @@ jobs:
           - os: macos-latest
             type: dmg
             artifact: AquaVision-macOS
-          - os: ubuntu-latest
-            type: deb
-            artifact: AquaVision-Linux
     runs-on: ${{ matrix.os }}
 
     steps:

@@ -4,7 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseManager {
-    private static final String DB_URL = "jdbc:sqlite:progress.db";
+    private static final String DB_URL;
+
+    static {
+        String userHome = System.getProperty("user.home");
+        java.io.File appDir = new java.io.File(userHome, ".aquavision");
+        appDir.mkdirs();
+        DB_URL = "jdbc:sqlite:" + new java.io.File(appDir, "progress.db").getAbsolutePath();
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(DB_URL);
+    }
 
     public static void initialize() {
         String sql = """
@@ -37,7 +48,7 @@ public class DatabaseManager {
     );
     """;
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
 
             stmt.execute(sql);
@@ -61,7 +72,7 @@ public class DatabaseManager {
                 last_updated = CURRENT_TIMESTAMP
             """;
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, mission);
@@ -81,7 +92,7 @@ public class DatabaseManager {
                 last_updated = CURRENT_TIMESTAMP
             """;
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, mission);
@@ -101,7 +112,7 @@ public class DatabaseManager {
             WHERE mission = ?
             """;
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, mission);
@@ -115,7 +126,7 @@ public class DatabaseManager {
     public static String getProgressReport(int mission) {
         String sql = "SELECT * FROM mission_progress WHERE mission = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, mission);
@@ -158,7 +169,7 @@ public class DatabaseManager {
                 last_updated = CURRENT_TIMESTAMP
             """;
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, isRightEye ? 1 : 0);
@@ -174,7 +185,7 @@ public class DatabaseManager {
     public static void loadUserSettings() {
         String sql = "SELECT * FROM user_settings WHERE id = 1";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -200,7 +211,7 @@ public class DatabaseManager {
         VALUES (?, CURRENT_TIMESTAMP, ?, ?, ?)
         """;
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, mission);
@@ -218,7 +229,7 @@ public class DatabaseManager {
 
         List<Boolean> successes = new ArrayList<>();
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, mission);
